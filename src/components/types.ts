@@ -2,14 +2,11 @@ export interface DayData {
   date: string;
   kcal: number | null;
   protein: number | null;
-  targetReached: boolean;
   weight: number | null;
 }
 
 export interface WeekData {
   weekNum: number;
-  weeklyKcalAvg: number;
-  weightDiff: number;
   days: DayData[];
 }
 
@@ -22,7 +19,7 @@ export interface EditEntryFormProps {
 export interface ProgressBarProps {
   current: number | null;
   target: number;
-  isGoodWhenLower?: boolean;
+  reached: boolean;
 }
 
 export interface DayCardProps {
@@ -37,13 +34,7 @@ export interface WeekCardProps {
   targetKcal: number;
   targetProtein: number;
   onSaveDay: (date: string, updatedDayData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
+  lastWeekAvgWeight: number | null;
 }
 
 export interface WeightProgressSectionProps {}
-
-export interface WeeklyDataSectionProps {
-  weeklyData: WeekData[] | null;
-  targetKcal: number | null;
-  targetProtein: number | null;
-  onSaveDay: (date: string, updatedDayData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
-}

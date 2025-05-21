@@ -32,6 +32,9 @@ const DayCard: React.FC<DayCardProps> = ({
     setIsEditing(false);
   };
 
+  const kcalReached = day.kcal !== null && day.kcal <= targetKcal;
+  const proteinReached = day.protein !== null && day.protein >= targetProtein;
+
   if (isEditing) {
     return (
       <div className="p-4 rounded-xl bg-neutral-800 border border-solid border-sky-500">
@@ -49,7 +52,7 @@ const DayCard: React.FC<DayCardProps> = ({
       className="flex flex-col gap-2 p-4 rounded-xl bg-white bg-opacity-0"
       style={{
         border: `1px solid ${
-          day.targetReached ? "rgb(63, 185, 80)" : "rgba(255, 255, 255, 0.1)"
+          (kcalReached && proteinReached) ? "rgb(63, 185, 80)" : "rgba(255, 255, 255, 0.1)"
         }`,
       }}
     >
@@ -61,21 +64,21 @@ const DayCard: React.FC<DayCardProps> = ({
       <div className="flex flex-col gap-3">
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-lg font-semibold">{day.kcal} kcal</span>
+            <span className="text-lg font-semibold">{day.kcal ?? '-'} kcal</span>
             <span className="text-sm text-zinc-400">{targetKcal}</span>
           </div>
           <ProgressBar
             current={day.kcal}
             target={targetKcal}
-            isGoodWhenLower={true}
+            reached={kcalReached}
           />
         </div>
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-zinc-400">{day.protein}g protein</span>
+            <span className="text-zinc-400">{day.protein ?? '- '}g protein</span>
             <span className="text-sm text-zinc-400">{targetProtein}g</span>
           </div>
-          <ProgressBar current={day.protein} target={targetProtein} />
+          <ProgressBar current={day.protein} target={targetProtein} reached={proteinReached} />
         </div>
       </div>
       <button 
