@@ -36,5 +36,3 @@ export interface WeekCardProps {
   onSaveDay: (date: string, updatedDayData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
   lastWeekAvgWeight: number | null;
 }
-
-export interface WeightProgressSectionProps {}

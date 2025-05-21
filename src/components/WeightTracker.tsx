@@ -3,9 +3,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 
 import { WeekData } from "./types";
-import WeightProgressSection from "./WeightProgressSection";
 import WeekCard from "./WeekCard";
 import { calculateAverageForWeek, getMonday, isSameDay } from "../utils/weekly_calculations";
+import WeightChart from "./WeightChart";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = new Date();
@@ -103,7 +103,12 @@ const WeightTracker: React.FC = () => {
   return (
     <main className="p-8 min-h-screen text-white bg-neutral-900">
       <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
-        <WeightProgressSection />
+        <section className="p-4 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
+          <header className="flex justify-between items-center mb-6">
+            <h2 className="text-2xl font-semibold">Weight Progress</h2>
+          </header>
+          <WeightChart weeks={weeklyData}/>
+        </section>
         <section className="flex flex-col gap-6">
           {weeklyData.map((week, index) => {
             const lastWeekAvgWeight = index > 0 ? calculateAverageForWeek(weeklyData[index - 1], "weight") : null;
