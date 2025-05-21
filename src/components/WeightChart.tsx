@@ -5,10 +5,10 @@ const WeightChart: React.FC = () => {
     <div className="relative border-b border-solid border-b-white border-b-opacity-10 h-[300px]">
       <figure
         role="img"
-        aria-label="Weight progress chart showing trend from 110kg to 90kg over 100 days"
+        aria-label="Weight progress chart showing trend"
         className="relative size-full"
       >
-        <div className="flex absolute inset-y-0 -left-10 flex-col justify-between text-xs text-zinc-400">
+        <div className="flex absolute inset-y-0 -left-5 flex-col justify-between text-xs text-zinc-400">
           <span>110kg</span>
           <span>100kg</span>
           <span>90kg</span>

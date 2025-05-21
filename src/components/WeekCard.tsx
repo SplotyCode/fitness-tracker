@@ -7,6 +7,7 @@ const WeekCard: React.FC<WeekCardProps> = ({
   week,
   targetKcal,
   targetProtein,
+  onSaveDay,
 }) => {
   return (
     <article className="p-6 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
@@ -33,6 +34,7 @@ const WeekCard: React.FC<WeekCardProps> = ({
             day={day}
             targetKcal={targetKcal}
             targetProtein={targetProtein}
+            onSaveDay={onSaveDay}
           />
         ))}
       </div>

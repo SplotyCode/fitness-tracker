@@ -6,8 +6,7 @@ import { WeekData } from "./types";
 import WeightProgressSection from "./WeightProgressSection";
 import WeeklyDataSection from "./WeeklyDataSection";
 
-// Sample data for demonstration
-const sampleWeeklyData: WeekData[] = [
+const initialWeeklyData: WeekData[] = [
   {
     weekNum: 1,
     weeklyKcalAvg: 2100,
@@ -19,6 +18,7 @@ const sampleWeeklyData: WeekData[] = [
         kcal: 2000 + Math.floor(Math.random() * 400),
         protein: 120 + Math.floor(Math.random() * 40),
         targetReached: Math.random() > 0.3,
+        weight: null
       })),
   },
   {
@@ -32,60 +32,44 @@ const sampleWeeklyData: WeekData[] = [
         kcal: 1900 + Math.floor(Math.random() * 400),
         protein: 130 + Math.floor(Math.random() * 40),
         targetReached: Math.random() > 0.3,
+        weight: null
       })),
   },
 ];
 
 const WeightTracker: React.FC = () => {
-  const [showInputForm, setShowInputForm] = useState<boolean>(false);
-  const [newWeight, setNewWeight] = useState<number | null>(null);
-  const [newKcal, setNewKcal] = useState<number | null>(null);
-  const [newProtein, setNewProtein] = useState<number | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeekData[] | null>(
-    sampleWeeklyData,
+    initialWeeklyData,
   );
-  const [targetKcal, setTargetKcal] = useState<number | null>(2200);
-  const [targetProtein, setTargetProtein] = useState<number | null>(140);
-
-  const addNewData = useCallback(() => {
-    if (newWeight && newKcal && newProtein) {
-      // In a real application, this would add the new data to the database
-      // For this demo, we'll just log it and reset the form
-      console.log("New entry:", {
-        weight: newWeight,
-        kcal: newKcal,
-        protein: newProtein,
-      });
-
-      // Reset form
-      setNewWeight(null);
-      setNewKcal(null);
-      setNewProtein(null);
-      setShowInputForm(false);
-
-      // In a real app, we would update the weekly data here
-    }
-  }, [newWeight, newKcal, newProtein]);
+  const handleSaveDayData = useCallback((date: string, updatedDay: { kcal: number | null, protein: number | null, weight: number | null }) => {
+    setWeeklyData(prevData => {
+      if (!prevData) return null;
+      return prevData.map(week => ({
+        ...week,
+        days: week.days.map(day =>
+          day.date === date
+            ? { 
+                ...day, 
+                kcal: updatedDay.kcal,
+                protein: updatedDay.protein,
+              }
+            : day
+        ),
+      }));
+    });
+    console.log("Day data saved:", date, updatedDay);
+  }, []);
+  
 
   return (
     <main className="p-8 min-h-screen text-white bg-neutral-900">
       <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
-        <WeightProgressSection
-          showInputForm={showInputForm}
-          setShowInputForm={setShowInputForm}
-          newWeight={newWeight}
-          setNewWeight={setNewWeight}
-          newKcal={newKcal}
-          setNewKcal={setNewKcal}
-          newProtein={newProtein}
-          setNewProtein={setNewProtein}
-          addNewData={addNewData}
-        />
-
+        <WeightProgressSection/>
         <WeeklyDataSection
           weeklyData={weeklyData}
-          targetKcal={targetKcal}
-          targetProtein={targetProtein}
+          targetKcal={2200}
+          targetProtein={140}
+          onSaveDay={handleSaveDayData}
         />
       </div>
     </main>

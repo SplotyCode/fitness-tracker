@@ -7,9 +7,9 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   target,
   isGoodWhenLower = false,
 }) => {
-  const percentage = Math.min((current / target) * 100, 100);
+  const percentage = current == null ? 0 : Math.min((current / target) * 100, 100);
 
-  const isGood = isGoodWhenLower ? current <= target : current >= target;
+  const isGood = current !== null && (isGoodWhenLower ? current <= target : current >= target);
 
   return (
     <div className="overflow-hidden h-1 rounded-sm bg-white bg-opacity-10">

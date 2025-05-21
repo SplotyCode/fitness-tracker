@@ -7,6 +7,7 @@ const WeeklyDataSection: React.FC<WeeklyDataSectionProps> = ({
   weeklyData,
   targetKcal,
   targetProtein,
+  onSaveDay,
 }) => {
   if (!weeklyData || !targetKcal || !targetProtein) {
     return null;
@@ -20,6 +21,7 @@ const WeeklyDataSection: React.FC<WeeklyDataSectionProps> = ({
           week={week}
           targetKcal={targetKcal}
           targetProtein={targetProtein}
+          onSaveDay={onSaveDay}
         />
       ))}
     </section>
