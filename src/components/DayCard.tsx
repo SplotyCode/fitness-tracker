@@ -21,14 +21,7 @@ const DayCard: React.FC<DayCardProps> = ({
   };
 
   const handleSaveEdit = (updatedData: { kcal: number | null, protein: number | null, weight: number | null }) => {
-    const finalKcal = updatedData.kcal ?? day.kcal;
-    const finalProtein = updatedData.protein ?? day.protein;
-    
-    onSaveDay(day.date, {
-      kcal: finalKcal,
-      protein: finalProtein,
-      weight: updatedData.weight
-    });
+    onSaveDay(day.date, updatedData);
     setIsEditing(false);
   };
 

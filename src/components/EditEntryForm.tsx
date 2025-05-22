@@ -15,7 +15,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
     if (entryData) {
       setCurrentKcal(entryData.kcal);
       setCurrentProtein(entryData.protein);
-      setCurrentWeight(entryData.weight !== undefined ? entryData.weight : null);
+      setCurrentWeight(entryData.weight);
     }
   }, [entryData]);
 
