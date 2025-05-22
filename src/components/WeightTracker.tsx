@@ -7,7 +7,7 @@ import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
 import { WeekData } from "./types";
 import WeekCard from "./WeekCard";
-import { calculateAverageForWeek, getMonday, isSameDay } from "../utils/weekly_calculations";
+import { calculateAverageForWeek, getMonday, isSameDateTime } from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
@@ -21,7 +21,7 @@ const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] =>
     date = new Date(lastFilledActual);
     date.setDate(date.getDate() + 1);
   } else {
-    date = getMonday(new Date());
+    date = getMonday(today);
   }
 
   while (date <= today) {
@@ -29,7 +29,7 @@ const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] =>
     const monday = getMonday(date);
     let week = data[data.length - 1];
 
-    if (!week || !isSameDay(getMonday(new Date(week.days[0]?.date)), monday)) {
+    if (!week || !isSameDateTime(getMonday(new Date(week.days[0]?.date)), monday)) {
       const newWeek: WeekData = {
         weekNum: week ? week.weekNum + 1 : 1,
         days: []

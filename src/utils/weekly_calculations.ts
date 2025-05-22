@@ -20,4 +20,4 @@ export const getMonday = (d: Date): Date => {
   return date;
 };
 
-export const isSameDay = (a: Date, b: Date): boolean => a.getTime() === b.getTime();
+export const isSameDateTime = (a: Date, b: Date): boolean => a.getTime() === b.getTime();
