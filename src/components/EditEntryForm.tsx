@@ -9,12 +9,14 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
 }) => {
   const [currentKcal, setCurrentKcal] = useState<number | null>(null);
   const [currentProtein, setCurrentProtein] = useState<number | null>(null);
+  const [currentFat, setCurrentFat] = useState<number | null>(null);
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
 
   useEffect(() => {
     if (entryData) {
       setCurrentKcal(entryData.kcal);
       setCurrentProtein(entryData.protein);
+      setCurrentFat(entryData.fat);
       setCurrentWeight(entryData.weight);
     }
   }, [entryData]);
@@ -34,11 +36,17 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
     setCurrentProtein(value);
   };
 
+  const handleFatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value ? Number(e.target.value) : null;
+    setCurrentFat(value);
+  };
+
   const handleSave = () => {
     onSave({
         weight: currentWeight,
         kcal: currentKcal,
-        protein: currentProtein
+        protein: currentProtein,
+        fat: currentFat
     });
   };
 
@@ -70,6 +78,14 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
             className="p-2 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
             value={currentProtein || ""}
             onChange={handleProteinChange}
+          />
+          <input
+              type="number"
+              placeholder="Fat (g)"
+              aria-label="Enter fat in grams"
+              className="p-2 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
+              value={currentFat || ""}
+              onChange={handleFatChange}
           />
         </div>
       </div>

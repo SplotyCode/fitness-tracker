@@ -6,8 +6,6 @@ import { calculateAverageForWeek } from "../utils/weekly_calculations";
 
 const WeekCard: React.FC<WeekCardProps> = ({
   week,
-  targetKcal,
-  targetProtein,
   onSaveDay,
   lastWeekAvgWeight,
   initialIsOpen,
@@ -68,8 +66,9 @@ const WeekCard: React.FC<WeekCardProps> = ({
               <DayCard
                 key={index}
                 day={day}
-                targetKcal={targetKcal}
-                targetProtein={targetProtein}
+                targetKcal={2200}
+                targetProtein={140}
+                targetFat={60}
                 onSaveDay={onSaveDay}
               />
             ))}

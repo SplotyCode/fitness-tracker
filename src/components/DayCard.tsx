@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { DayCardProps } from "./types";
+import {DayCardProps, DayUpdateData} from "./types";
 import ProgressBar from "./ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 
@@ -8,6 +8,7 @@ const DayCard: React.FC<DayCardProps> = ({
   day,
   targetKcal,
   targetProtein,
+  targetFat,
   onSaveDay,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -20,13 +21,14 @@ const DayCard: React.FC<DayCardProps> = ({
     setIsEditing(false);
   };
 
-  const handleSaveEdit = (updatedData: { kcal: number | null, protein: number | null, weight: number | null }) => {
+  const handleSaveEdit = (updatedData: DayUpdateData) => {
     onSaveDay(day.date, updatedData);
     setIsEditing(false);
   };
 
   const kcalReached = day.kcal !== null && day.kcal <= targetKcal;
   const proteinReached = day.protein !== null && day.protein >= targetProtein;
+  const fatReached = day.fat !== null && day.fat >= targetFat;
 
   if (isEditing) {
     return (
@@ -72,6 +74,13 @@ const DayCard: React.FC<DayCardProps> = ({
             <span className="text-sm text-zinc-400">{targetProtein}g</span>
           </div>
           <ProgressBar current={day.protein} target={targetProtein} reached={proteinReached} />
+        </div>
+        <div>
+          <div className="flex justify-between mb-1">
+            <span className="text-zinc-400">{day.fat ?? '- '}g fat</span>
+            <span className="text-sm text-zinc-400">{targetFat}g</span>
+          </div>
+          <ProgressBar current={day.fat} target={targetFat} reached={fatReached} />
         </div>
       </div>
       <button 

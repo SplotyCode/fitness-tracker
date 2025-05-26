@@ -210,8 +210,6 @@ const WeightTracker: React.FC = () => {
                 <WeekCard
                   key={week.weekNum}
                   week={week}
-                  targetKcal={2200}
-                  targetProtein={140}
                   onSaveDay={handleSaveDayData}
                   lastWeekAvgWeight={lastWeekAvgWeight}
                   initialIsOpen={index === 0}
