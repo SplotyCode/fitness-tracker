@@ -203,11 +203,12 @@ const WeightTracker: React.FC = () => {
         </section>
         {user && (
           <section className="flex flex-col gap-6">
-            {weeklyData.map((week, index) => {
-              const lastWeekAvgWeight = index > 0 ? calculateAverageForWeek(weeklyData[index - 1], "weight") : null;
+            {[...weeklyData].reverse().map((week, index, reversedArr) => {
+              const originalIndex = weeklyData.length - 1 - index;
+              const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeklyData[originalIndex - 1], "weight") : null;
               return (
                 <WeekCard
-                  key={index}
+                  key={week.weekNum}
                   week={week}
                   targetKcal={2200}
                   targetProtein={140}
