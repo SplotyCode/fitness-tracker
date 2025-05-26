@@ -10,9 +10,15 @@ export interface WeekData {
   days: DayData[];
 }
 
+export type DayUpdateData = {
+  kcal: number | null;
+  protein: number | null;
+  weight: number | null;
+};
+
 export interface EditEntryFormProps {
   entryData: DayData;
-  onSave: (updatedData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
+  onSave: (updatedData: DayUpdateData) => void;
   onCancel: () => void;
 }
 
@@ -26,13 +32,13 @@ export interface DayCardProps {
   day: DayData;
   targetKcal: number;
   targetProtein: number;
-  onSaveDay: (date: string, updatedDayData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
+  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
 }
 
 export interface WeekCardProps {
   week: WeekData;
   targetKcal: number;
   targetProtein: number;
-  onSaveDay: (date: string, updatedDayData: { kcal: number | null, protein: number | null, weight: number | null }) => void;
+  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   lastWeekAvgWeight: number | null;
 }

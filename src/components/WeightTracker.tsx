@@ -5,7 +5,7 @@ import { GithubAuthProvider, signInWithPopup, signOut, User } from "firebase/aut
 import { auth, db } from "../firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
-import { WeekData } from "./types";
+import { WeekData, DayUpdateData } from "./types";
 import WeekCard from "./WeekCard";
 import { calculateAverageForWeek, getMonday, isSameDateTime } from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
@@ -129,7 +129,7 @@ const WeightTracker: React.FC = () => {
     }
   };
 
-  const handleSaveDayData = useCallback(async (date: string, updatedDay: { kcal: number | null, protein: number | null, weight: number | null }) => {
+  const handleSaveDayData = useCallback(async (date: string, updatedDay: DayUpdateData) => {
     if (!user) {
       console.error("Cannot save data: no user logged in.");
       return;
