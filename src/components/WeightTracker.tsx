@@ -213,6 +213,7 @@ const WeightTracker: React.FC = () => {
                   targetProtein={140}
                   onSaveDay={handleSaveDayData}
                   lastWeekAvgWeight={lastWeekAvgWeight}
+                  initialIsOpen={index === 0}
                 />
               );
             })}

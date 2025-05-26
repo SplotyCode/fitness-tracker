@@ -41,4 +41,5 @@ export interface WeekCardProps {
   targetProtein: number;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   lastWeekAvgWeight: number | null;
+  initialIsOpen: boolean;
 }
