@@ -42,6 +42,7 @@ const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] =>
         date: isoDate,
         kcal: null,
         protein: null,
+        fat: null,
         weight: null,
       });
       week.days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());

@@ -62,15 +62,15 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
           value={currentWeight || ""}
           onChange={handleWeightChange}
         />
-        <div className="grid grid-cols-2 gap-4">
-          <input
+        <input
             type="number"
             placeholder="Calories"
             aria-label="Enter calories consumed"
             className="p-2 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
             value={currentKcal || ""}
             onChange={handleKcalChange}
-          />
+        />
+        <div className="grid grid-cols-2 gap-4">
           <input
             type="number"
             placeholder="Protein (g)"
