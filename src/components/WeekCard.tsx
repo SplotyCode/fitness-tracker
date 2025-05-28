@@ -12,6 +12,8 @@ const WeekCard: React.FC<WeekCardProps> = ({
 }) => {
   const [showDays, setShowDays] = useState(initialIsOpen);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
+  const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
+  const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
 
   const weightDiff =
@@ -32,7 +34,9 @@ const WeekCard: React.FC<WeekCardProps> = ({
         <div>
           <h3 className="text-xl font-semibold">Week {week.weekNum}</h3>
           <p className="text-zinc-400">
-            Avg. {weeklyKcalAvg !== null ? Math.round(weeklyKcalAvg) : "-"} kcal/day
+            Avg: {weeklyKcalAvg !== null ? Math.round(weeklyKcalAvg) : "-"} kcal / {" "}
+            {weeklyProteinAvg !== null ? Math.round(weeklyProteinAvg) : "-"}g P / {" "}
+            {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
           </p>
         </div>
         <div className="flex items-center">
