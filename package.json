@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "buildAndDeploy": "vite build && firebase deploy"
+    "buildAndDeploy": "vite build && firebase deploy",
+    "check": "tsc --noEmit"
   },
   "keywords": [],
   "author": "",
