@@ -70,9 +70,6 @@ const WeekCard: React.FC<WeekCardProps> = ({
               <DayCard
                 key={index}
                 day={day}
-                targetKcal={2200}
-                targetProtein={140}
-                targetFat={50}
                 onSaveDay={onSaveDay}
               />
             ))}

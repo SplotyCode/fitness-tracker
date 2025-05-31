@@ -24,17 +24,8 @@ export interface EditEntryFormProps {
   onCancel: () => void;
 }
 
-export interface ProgressBarProps {
-  current: number | null;
-  target: number;
-  reached: boolean;
-}
-
 export interface DayCardProps {
   day: DayData;
-  targetKcal: number;
-  targetProtein: number;
-  targetFat: number;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
 }
 

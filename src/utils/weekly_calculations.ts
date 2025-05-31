@@ -1,12 +1,8 @@
 import { WeekData, DayData } from "../components/types";
 
-type NumericKeys<T> = {
-  [K in keyof T]: T[K] extends number | null ? K : never;
-}[keyof T];
-
 export const calculateAverageForWeek = (
   week: WeekData,
-  key: NumericKeys<DayData>
+  key: keyof Pick<DayData, "kcal" | "weight" | "protein" | "fat">
 ): number | null => {
   const validDays = week.days.filter(day => day[key] !== null);
   if (validDays.length === 0) {

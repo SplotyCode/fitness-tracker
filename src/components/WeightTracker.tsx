@@ -204,7 +204,7 @@ const WeightTracker: React.FC = () => {
         </section>
         {user && (
           <section className="flex flex-col gap-6">
-            {[...weeklyData].reverse().map((week, index, reversedArr) => {
+            {[...weeklyData].reverse().map((week, index) => {
               const originalIndex = weeklyData.length - 1 - index;
               const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeklyData[originalIndex - 1], "weight") : null;
               return (

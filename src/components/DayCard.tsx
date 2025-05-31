@@ -3,12 +3,16 @@ import React, { useState } from "react";
 import {DayCardProps, DayUpdateData} from "./types";
 import ProgressBar from "./ProgressBar";
 import EditEntryForm from "./EditEntryForm";
+import {
+  getKcalLevels,
+  getProteinLevels,
+  getFatLevels,
+  getOptimalValue,
+  getDayColor
+} from "../utils/nutrition";
 
 const DayCard: React.FC<DayCardProps> = ({
   day,
-  targetKcal,
-  targetProtein,
-  targetFat,
   onSaveDay,
 }) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -26,9 +30,7 @@ const DayCard: React.FC<DayCardProps> = ({
     setIsEditing(false);
   };
 
-  const kcalReached = day.kcal !== null && day.kcal <= targetKcal;
-  const proteinReached = day.protein !== null && day.protein >= targetProtein;
-  const fatReached = day.fat !== null && day.fat >= targetFat;
+  const dailyLevel = getDayColor(day);
 
   if (isEditing) {
     return (
@@ -47,7 +49,7 @@ const DayCard: React.FC<DayCardProps> = ({
       className="flex flex-col gap-2 p-4 rounded-xl bg-white bg-opacity-0"
       style={{
         border: `1px solid ${
-          (kcalReached && proteinReached) ? "rgb(63, 185, 80)" : "rgba(255, 255, 255, 0.1)"
+          (dailyLevel) ? dailyLevel : "rgba(255, 255, 255, 0.1)"
         }`,
       }}
     >
@@ -60,27 +62,26 @@ const DayCard: React.FC<DayCardProps> = ({
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-lg font-semibold">{day.kcal ?? '-'} kcal</span>
-            <span className="text-sm text-zinc-400">{targetKcal}</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(getKcalLevels())}</span>
           </div>
           <ProgressBar
             current={day.kcal}
-            target={targetKcal}
-            reached={kcalReached}
+            levels={getKcalLevels()}
           />
         </div>
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-zinc-400">{day.protein ?? '- '}g protein</span>
-            <span className="text-sm text-zinc-400">{targetProtein}g</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(getProteinLevels())}g</span>
           </div>
-          <ProgressBar current={day.protein} target={targetProtein} reached={proteinReached} />
+          <ProgressBar current={day.protein} levels={getProteinLevels()} />
         </div>
         <div>
           <div className="flex justify-between mb-1">
             <span className="text-zinc-400">{day.fat ?? '- '}g fat</span>
-            <span className="text-sm text-zinc-400">{targetFat}g</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(getFatLevels())}g</span>
           </div>
-          <ProgressBar current={day.fat} target={targetFat} reached={fatReached} />
+          <ProgressBar current={day.fat} levels={getFatLevels()}/>
         </div>
       </div>
       <button 
