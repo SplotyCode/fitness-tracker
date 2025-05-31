@@ -194,7 +194,7 @@ const WeightTracker: React.FC = () => {
           </header>
           {user ? (
             <>
-              <WeightChart weeks={weeklyData}/>
+              <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
             </>
           ) : (
             <div className="text-center py-10">
