@@ -9,12 +9,14 @@ import {
   Dot,
 } from "recharts";
 import { WeekData } from "./types";
+import { calculateAverageForWeek } from "../utils/weekly_calculations";
 
 interface ChartPoint {
   name: string;
   weight: number | null;
   average?: number;
   date: string;
+  weekIndex: number;
 }
 
 interface Props {
@@ -23,11 +25,12 @@ interface Props {
 }
 
 const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
-  const flatData: ChartPoint[] = weeks.flatMap((week) =>
+  const flatData: ChartPoint[] = weeks.flatMap((week, weekIndex) =>
       week.days.map((day, i) => ({
         name: `W${week.weekNum}-D${i + 1}`,
         weight: day.weight,
         date: day.date,
+        weekIndex
       }))
   );
 
@@ -39,26 +42,33 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
     return { ...p, average: avg };
   });
 
-  const firstValidEntry = flatData.find(d => d.weight !== null);
   let dataWithTargets: ChartPoint[] = dataWithAvg.map(p => ({ ...p, targetWeights: {} }));
 
-  if (firstValidEntry && targetLossRates.length > 0) {
-    const startDate = new Date(firstValidEntry.date);
-    const startWeight = firstValidEntry.weight as number;
+  if (targetLossRates.length > 0) {
+    dataWithTargets = dataWithAvg.map((p) => {
+      if (p.weekIndex <= 0) {
+        return p;
+      }
+      
+      const startWeightAvg = calculateAverageForWeek(weeks[p.weekIndex - 1], "weight");
 
-    dataWithTargets = dataWithAvg.map(p => {
+      if (startWeightAvg === null) {
+        return p;
+      }
+
       const currentDate = new Date(p.date);
-      const diffTime = Math.abs(currentDate.getTime() - startDate.getTime());
-      const diffWeeks = diffTime / (1000 * 60 * 60 * 24 * 7);
+      const firstDayOfCurrentWeek = new Date(weeks[p.weekIndex].days[0].date);
+      const diffDaysSinceWeekStart = (currentDate.getTime() - firstDayOfCurrentWeek.getTime()) / (1000 * 60 * 60 * 24);
+
 
       const newTargetWeights: { [key: string]: number } = {};
       targetLossRates.forEach(rate => {
-        if (currentDate >= startDate) {
-            newTargetWeights[`target_${String(rate).replace('.', '_')}`] = +(startWeight - diffWeeks * rate).toFixed(1);
-        }
+        const dailyRate = rate / 7;
+        newTargetWeights[`target_${String(rate).replace('.', '_')}`] = 
+          +(startWeightAvg - ((diffDaysSinceWeekStart + 3.5) * dailyRate)).toFixed(1);
       });
 
-      return { ...p, ...newTargetWeights};
+      return { ...p, ...newTargetWeights };
     });
   }
 
@@ -114,7 +124,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
                 stroke="#38bdf8"
                 strokeWidth={0}
                 dot={({ cx, cy, payload }) =>
-                    payload.weight !== null ? <Dot cx={cx} cy={cy} r={4} fill="#38bdf8" /> : <g />
+                    payload.weight !== null ? <Dot key={`dot-${payload.name}`} cx={cx} cy={cy} r={4} fill="#38bdf8" /> : <g key={`g-${payload.name}`} />
                 }
                 connectNulls={false}
             />
@@ -127,15 +137,13 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
                 strokeDasharray="4 4"
                 activeDot={false}
             />
-            {targetLossRates.map((rate, index) => {
+            {targetLossRates.map((rate) => {
               const dataKey = `target_${String(rate).replace('.', '_')}`;
-              const colors = ["#f59e0b", "#f472b6", "#8b5cf6"];
-              const strokeColor = colors[index % colors.length];
               return (
                 <Line
                   key={dataKey}
                   dataKey={dataKey}
-                  stroke={strokeColor}
+                  stroke={"#f59e0b"}
                   strokeWidth={1.5}
                   dot={false}
                   connectNulls
