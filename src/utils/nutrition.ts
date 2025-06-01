@@ -37,9 +37,12 @@ export const getFatLevels = (): Level[] => [
 export const getOptimalValue = (sortedLevels: Level[]): number => {
     const level = sortedLevels.findIndex(value => value.color == NutritionColor.GREEN)
     if (level === -1) {
-        throw new Error("No green level");
+        return 0;
     }
     const min = sortedLevels[level].value;
+    if (sortedLevels.length - 1 === min) {
+        return min;
+    }
     const max = sortedLevels[level + 1].value;
     return (max - min) / 2 + min;
 }
