@@ -20,4 +20,6 @@ export const getMonday = (d: Date): Date => {
   return date;
 };
 
+export const toUtcMidnight = (d: Date): Date => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()))
+
 export const isSameDateTime = (a: Date, b: Date): boolean => a.getTime() === b.getTime();

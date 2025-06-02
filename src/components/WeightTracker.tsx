@@ -7,12 +7,11 @@ import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
 import { WeekData, DayUpdateData } from "./types";
 import WeekCard from "./WeekCard";
-import { calculateAverageForWeek, getMonday, isSameDateTime } from "../utils/weekly_calculations";
+import {calculateAverageForWeek, getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
-  const today = new Date();
-  today.setHours(0)
+  const today = toUtcMidnight(new Date())
   const data = existingData ? structuredClone(existingData) : [];
 
   const lastFilledActual = getLastFilledDate(data);
@@ -58,8 +57,7 @@ const getLastFilledDate = (data: WeekData[]): Date | null => {
   const lastWeek = data[data.length - 1];
   if (!lastWeek || lastWeek.days.length === 0) return null;
   const lastDay = new Date(lastWeek.days[lastWeek.days.length - 1].date);
-  lastDay.setHours(0, 0, 0, 0);
-  return lastDay;
+  return toUtcMidnight(lastDay);
 };
 
 const WeightTracker: React.FC = () => {
