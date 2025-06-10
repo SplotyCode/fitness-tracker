@@ -23,7 +23,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
   }, [entryData]);
 
   const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value ? Number(e.target.value) : null;
+    const value = e.target.value ? Number(e.target.value.replace(',', '.')) : null;
     setCurrentWeight(value);
   };
 
