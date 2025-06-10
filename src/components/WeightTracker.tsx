@@ -4,6 +4,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { signInWithPopup, signOut, User } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
+import { FaSignOutAlt, FaSpinner } from "react-icons/fa";
 
 import { WeekData, DayUpdateData } from "./types";
 import WeekCard from "./WeekCard";
@@ -160,7 +161,10 @@ const WeightTracker: React.FC = () => {
   if (isLoading) {
     return (
       <main className="p-8 min-h-screen text-white bg-neutral-900 flex justify-center items-center">
-        <p className="text-xl">Loading...</p>
+        <div className="flex items-center gap-3">
+          <FaSpinner className="text-2xl animate-spin" />
+          <p className="text-xl">Loading...</p>
+        </div>
       </main>
     );
   }
@@ -181,8 +185,9 @@ const WeightTracker: React.FC = () => {
                   <span className="text-sm">Welcome, {user.displayName || user.email}</span>
                   <button
                     onClick={handleSignOut}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center gap-2"
                   >
+                    <FaSignOutAlt />
                     Sign Out
                   </button>
                 </div>
