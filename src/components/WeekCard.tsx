@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 import { WeekCardProps } from "./types";
 import DayCard from "./DayCard";
@@ -39,28 +40,41 @@ const WeekCard: React.FC<WeekCardProps> = ({
             {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
           </p>
         </div>
-        <div className="flex items-center">
-          <div
-            className="text-3xl font-semibold mr-4"
-            style={{
-              color:
-                weightDiff !== null
-                  ? weightDiff < 0
-                    ? "rgb(63, 185, 80)"
-                    : "rgb(248, 81, 73)"
-                  : "inherit",
-            }}
-          >
-            {weightDiff !== null ? (
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            {weightDiff !== null && (
               <>
-                {weightDiff > 0 && "+"}
-                {weightDiff} kg
+                {weightDiff < 0 && <FaArrowDown className="text-green-500" />}
+                {weightDiff > 0 && <FaArrowUp className="text-red-500" />}
               </>
+            )}
+            <div
+              className="text-3xl font-semibold"
+              style={{
+                color:
+                  weightDiff !== null
+                    ? weightDiff < 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                    : "inherit",
+              }}
+            >
+              {weightDiff !== null ? (
+                <>
+                  {Math.abs(weightDiff)} kg
+                </>
+              ) : (
+                "— kg"
+              )}
+            </div>
+          </div>
+          <div className="flex items-center">
+            {showDays ? (
+              <FaChevronUp className="text-zinc-400 text-lg" />
             ) : (
-              "— kg"
+              <FaChevronDown className="text-zinc-400 text-lg" />
             )}
           </div>
-          <span>{showDays ? "▲" : "▼"}</span>
         </div>
       </header>
       {showDays && (

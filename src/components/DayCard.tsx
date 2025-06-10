@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
 import {DayCardProps, DayUpdateData} from "./types";
 import ProgressBar from "./ProgressBar";
@@ -61,7 +62,10 @@ const DayCard: React.FC<DayCardProps> = ({
       <div className="flex flex-col gap-3">
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-lg font-semibold">{day.kcal ?? '-'} kcal</span>
+            <div className="flex items-center gap-2">
+              <FaFire className="text-orange-500" />
+              <span className="text-lg font-semibold">{day.kcal ?? '-'} kcal</span>
+            </div>
             <span className="text-sm text-zinc-400">{getOptimalValue(getKcalLevels())}</span>
           </div>
           <ProgressBar
@@ -71,23 +75,30 @@ const DayCard: React.FC<DayCardProps> = ({
         </div>
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-zinc-400">{day.protein ?? '- '}g protein</span>
+            <div className="flex items-center gap-2">
+              <FaDrumstickBite className="text-red-400" />
+              <span className="text-zinc-400">{day.protein ?? '- '}g protein</span>
+            </div>
             <span className="text-sm text-zinc-400">{getOptimalValue(getProteinLevels())}g</span>
           </div>
           <ProgressBar current={day.protein} levels={getProteinLevels()} />
         </div>
         <div>
           <div className="flex justify-between mb-1">
-            <span className="text-zinc-400">{day.fat ?? '- '}g fat</span>
+            <div className="flex items-center gap-2">
+              <FaOilCan className="text-yellow-400" />
+              <span className="text-zinc-400">{day.fat ?? '- '}g fat</span>
+            </div>
             <span className="text-sm text-zinc-400">{getOptimalValue(getFatLevels())}g</span>
           </div>
           <ProgressBar current={day.fat} levels={getFatLevels()}/>
         </div>
       </div>
       <button 
-        className="mt-2 px-3 py-1 text-xs text-white rounded-md border border-solid cursor-pointer bg-zinc-700 border-white border-opacity-10 hover:bg-zinc-600"
+        className="mt-2 px-3 py-1 text-xs text-white rounded-md border border-solid cursor-pointer bg-zinc-700 border-white border-opacity-10 hover:bg-zinc-600 flex items-center justify-center gap-2"
         onClick={handleEdit}
       >
+        <FaEdit />
         Edit
       </button>
     </div>
