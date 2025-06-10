@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useCallback, useEffect } from "react";
-import { GithubAuthProvider, signInWithPopup, signOut, User } from "firebase/auth";
+import { signInWithPopup, signOut, User } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { doc, setDoc, onSnapshot } from "firebase/firestore";
 
@@ -9,6 +9,8 @@ import { WeekData, DayUpdateData } from "./types";
 import WeekCard from "./WeekCard";
 import {calculateAverageForWeek, getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
+import Login from "./Login";
+import {AuthProvider} from "@firebase/auth";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = toUtcMidnight(new Date())
@@ -109,13 +111,13 @@ const WeightTracker: React.FC = () => {
     };
   }, []);
 
-  const handleGitHubSignIn = async () => {
-    const provider = new GithubAuthProvider();
+  const handleSignIn = async (provider: AuthProvider) => {
     try {
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
     } catch (error: any) {
-      console.error("GitHub sign-in error:", error);
+      console.error("Sign-in error:", error);
+      throw error;
     }
   };
 
@@ -163,6 +165,10 @@ const WeightTracker: React.FC = () => {
     );
   }
 
+  if (!user) {
+    return <Login onSignIn={handleSignIn} />;
+  }
+
   return (
     <main className="p-8 min-h-screen text-white bg-neutral-900">
       <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
@@ -180,14 +186,7 @@ const WeightTracker: React.FC = () => {
                     Sign Out
                   </button>
                 </div>
-              ) : (
-                <button
-                  onClick={handleGitHubSignIn}
-                  className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                >
-                  Sign in with GitHub
-                </button>
-              )}
+              ) : null}
             </div>
           </header>
           {user ? (
