@@ -1,17 +1,18 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
-import { signInWithPopup, signOut, User } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
-import { FaSignOutAlt, FaSpinner } from "react-icons/fa";
+import React, {useCallback, useEffect, useState} from "react";
+import {signInWithPopup, signOut, User} from "firebase/auth";
+import {auth, db} from "../firebase";
+import {doc, onSnapshot, setDoc} from "firebase/firestore";
+import {FaSignOutAlt, FaSpinner} from "react-icons/fa";
 
-import { WeekData, DayUpdateData } from "./types";
+import {DayUpdateData, NutritionGoals, WeekData} from "./types";
 import WeekCard from "./WeekCard";
 import {calculateAverageForWeek, getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
+import {findNutritionGoalsForWeek, getDefaultNutritionGoal} from "../utils/nutrition";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = toUtcMidnight(new Date())
@@ -66,6 +67,7 @@ const getLastFilledDate = (data: WeekData[]): Date | null => {
 const WeightTracker: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
+  const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -86,13 +88,26 @@ const WeightTracker: React.FC = () => {
 
         unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
-            const dataFromFirestore = docSnap.data()?.weeks as WeekData[];
-            const validData = Array.isArray(dataFromFirestore) ? dataFromFirestore : null;
+            const dataFromFirestore = docSnap.data();
+            const validData = Array.isArray(dataFromFirestore?.weeks) ? dataFromFirestore.weeks : null;
             setWeeklyData(fillMissingDaysAndWeeks(validData));
+
+            const goals = dataFromFirestore?.nutritionGoals;
+            if (goals && goals.length > 0) {
+              setNutritionGoals(goals);
+            } else {
+              const defaultGoals = [getDefaultNutritionGoal()];
+              setNutritionGoals(defaultGoals);
+              setDoc(userDocRef, { nutritionGoals: defaultGoals }, { merge: true });
+            }
             console.log("Data updated from Firestore snapshot");
           } else {
             console.log("No data in Firestore for this user, initializing.");
-            setWeeklyData(fillMissingDaysAndWeeks(null));
+            const defaultGoals = [getDefaultNutritionGoal()];
+            const filledWeeks = fillMissingDaysAndWeeks(null);
+            setWeeklyData(filledWeeks);
+            setNutritionGoals(defaultGoals);
+            setDoc(userDocRef, { weeks: filledWeeks, nutritionGoals: defaultGoals });
           }
         }, (error) => {
           console.error("Error listening to Firestore snapshots:", error);
@@ -100,6 +115,7 @@ const WeightTracker: React.FC = () => {
       } else {
         console.log("User signed out");
         setWeeklyData([]);
+        setNutritionGoals([]);
       }
       setIsLoading(false);
     });
@@ -152,11 +168,11 @@ const WeightTracker: React.FC = () => {
 
     const userDocRef = doc(db, "users", user.uid, "weeklyData", "data");
     try {
-      await setDoc(userDocRef, { weeks: updatedWeeklyData });
+      await setDoc(userDocRef, { weeks: updatedWeeklyData, nutritionGoals });
     } catch (error) {
       console.error("Error saving data to Firestore:", error);
     }
-  }, [user, weeklyData]);
+  }, [user, weeklyData, nutritionGoals]);
 
   if (isLoading) {
     return (
@@ -209,6 +225,7 @@ const WeightTracker: React.FC = () => {
             {[...weeklyData].reverse().map((week, index) => {
               const originalIndex = weeklyData.length - 1 - index;
               const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeklyData[originalIndex - 1], "weight") : null;
+              const goalsForWeek = findNutritionGoalsForWeek(week, nutritionGoals);
               return (
                 <WeekCard
                   key={week.weekNum}
@@ -216,6 +233,7 @@ const WeightTracker: React.FC = () => {
                   onSaveDay={handleSaveDayData}
                   lastWeekAvgWeight={lastWeekAvgWeight}
                   initialIsOpen={index === 0}
+                  nutritionGoals={goalsForWeek}
                 />
               );
             })}

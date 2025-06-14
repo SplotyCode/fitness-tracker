@@ -10,6 +10,7 @@ const WeekCard: React.FC<WeekCardProps> = ({
   onSaveDay,
   lastWeekAvgWeight,
   initialIsOpen,
+  nutritionGoals,
 }) => {
   const [showDays, setShowDays] = useState(initialIsOpen);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
@@ -85,6 +86,7 @@ const WeekCard: React.FC<WeekCardProps> = ({
                 key={index}
                 day={day}
                 onSaveDay={onSaveDay}
+                nutritionGoals={nutritionGoals}
               />
             ))}
           </div>
