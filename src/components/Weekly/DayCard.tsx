@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
-import {DayCardProps, DayUpdateData} from "./types";
-import ProgressBar from "./ProgressBar";
+import {DayCardProps, DayUpdateData} from "../types";
+import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 import {
   getOptimalValue,
   getDayColor, getColorHex
-} from "../utils/nutrition";
+} from "../../utils/nutrition";
 
 const DayCard: React.FC<DayCardProps> = ({
   day,

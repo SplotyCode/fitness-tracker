@@ -1,0 +1,34 @@
+import {calculateAverageForWeek} from "../../utils/weekly_calculations";
+import {findNutritionGoalsForWeek} from "../../utils/nutrition";
+import WeekCard from "./WeekCard";
+import {NutritionGoals, WeekData} from "../types";
+
+interface Props {
+  weeks: WeekData[];
+  onSaveDay: (d: string, data: any) => void;
+  goals: NutritionGoals[];
+}
+
+const WeekList = ({weeks, onSaveDay, goals}: Props) => {
+  return (
+    <section className="flex flex-col gap-6">
+      {[...weeks].reverse().map((week, index) => {
+        const originalIndex = weeks.length - 1 - index;
+        const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeks[originalIndex - 1], "weight") : null;
+        const goalsForWeek = findNutritionGoalsForWeek(week, goals);
+        return (
+          <WeekCard
+            key={week.weekNum}
+            week={week}
+            onSaveDay={onSaveDay}
+            lastWeekAvgWeight={lastWeekAvgWeight}
+            initialIsOpen={index === 0}
+            nutritionGoals={goalsForWeek}
+          />
+        );
+      })}
+    </section>
+  )
+}
+
+export default WeekList;

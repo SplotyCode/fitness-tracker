@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
-import { WeekCardProps } from "./types";
+import { WeekCardProps } from "../types";
 import DayCard from "./DayCard";
-import { calculateAverageForWeek } from "../utils/weekly_calculations";
+import { calculateAverageForWeek } from "../../utils/weekly_calculations";
 
 const WeekCard: React.FC<WeekCardProps> = ({
   week,
