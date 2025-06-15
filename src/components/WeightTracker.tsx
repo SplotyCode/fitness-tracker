@@ -1,17 +1,19 @@
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
-import { signInWithPopup, signOut, User } from "firebase/auth";
-import { auth, db } from "../firebase";
-import { doc, setDoc, onSnapshot } from "firebase/firestore";
-import { FaSignOutAlt, FaSpinner } from "react-icons/fa";
+import React, {useCallback, useEffect, useState} from "react";
+import {signInWithPopup, signOut, User} from "firebase/auth";
+import {auth, db} from "../firebase";
+import {doc, onSnapshot, setDoc} from "firebase/firestore";
+import {FaBullseye, FaSignOutAlt, FaSpinner} from "react-icons/fa";
 
-import { WeekData, DayUpdateData } from "./types";
+import {DayUpdateData, NutritionGoals, WeekData} from "./types";
 import WeekCard from "./WeekCard";
 import {calculateAverageForWeek, getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
+import {findNutritionGoalsForWeek, getDefaultNutritionGoal} from "../utils/nutrition";
+import GoalsModal from "./GoalsModal";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = toUtcMidnight(new Date())
@@ -66,6 +68,7 @@ const getLastFilledDate = (data: WeekData[]): Date | null => {
 const WeightTracker: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
+  const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -86,13 +89,26 @@ const WeightTracker: React.FC = () => {
 
         unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
           if (docSnap.exists()) {
-            const dataFromFirestore = docSnap.data()?.weeks as WeekData[];
-            const validData = Array.isArray(dataFromFirestore) ? dataFromFirestore : null;
+            const dataFromFirestore = docSnap.data();
+            const validData = Array.isArray(dataFromFirestore?.weeks) ? dataFromFirestore.weeks : null;
             setWeeklyData(fillMissingDaysAndWeeks(validData));
+
+            const goals = dataFromFirestore?.nutritionGoals;
+            if (goals && goals.length > 0) {
+              setNutritionGoals(goals);
+            } else {
+              const defaultGoals = [getDefaultNutritionGoal()];
+              setNutritionGoals(defaultGoals);
+              setDoc(userDocRef, { nutritionGoals: defaultGoals }, { merge: true });
+            }
             console.log("Data updated from Firestore snapshot");
           } else {
             console.log("No data in Firestore for this user, initializing.");
-            setWeeklyData(fillMissingDaysAndWeeks(null));
+            const defaultGoals = [getDefaultNutritionGoal()];
+            const filledWeeks = fillMissingDaysAndWeeks(null);
+            setWeeklyData(filledWeeks);
+            setNutritionGoals(defaultGoals);
+            setDoc(userDocRef, { weeks: filledWeeks, nutritionGoals: defaultGoals });
           }
         }, (error) => {
           console.error("Error listening to Firestore snapshots:", error);
@@ -100,6 +116,7 @@ const WeightTracker: React.FC = () => {
       } else {
         console.log("User signed out");
         setWeeklyData([]);
+        setNutritionGoals([]);
       }
       setIsLoading(false);
     });
@@ -152,11 +169,25 @@ const WeightTracker: React.FC = () => {
 
     const userDocRef = doc(db, "users", user.uid, "weeklyData", "data");
     try {
-      await setDoc(userDocRef, { weeks: updatedWeeklyData });
+      await setDoc(userDocRef, { weeks: updatedWeeklyData, nutritionGoals });
     } catch (error) {
       console.error("Error saving data to Firestore:", error);
     }
-  }, [user, weeklyData]);
+  }, [user, weeklyData, nutritionGoals]);
+
+  const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
+        if (!user) return;
+        setNutritionGoals(newGoals);
+        const userDocRef = doc(db, "users", user.uid, "weeklyData", "data");
+        try {
+          await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
+        } catch (err) {
+          console.error("Error saving nutrition goals:", err);
+        }
+      },
+      [user]
+  );
+  const [showGoalsModal, setShowGoalsModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -184,6 +215,13 @@ const WeightTracker: React.FC = () => {
                 <div className="flex items-center gap-4">
                   <span className="text-sm">Welcome, {user.displayName || user.email}</span>
                   <button
+                      onClick={() => setShowGoalsModal(true)}
+                      className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                  >
+                    <FaBullseye />
+                    Goals
+                  </button>
+                  <button
                     onClick={handleSignOut}
                     className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center gap-2"
                   >
@@ -209,6 +247,7 @@ const WeightTracker: React.FC = () => {
             {[...weeklyData].reverse().map((week, index) => {
               const originalIndex = weeklyData.length - 1 - index;
               const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeklyData[originalIndex - 1], "weight") : null;
+              const goalsForWeek = findNutritionGoalsForWeek(week, nutritionGoals);
               return (
                 <WeekCard
                   key={week.weekNum}
@@ -216,12 +255,19 @@ const WeightTracker: React.FC = () => {
                   onSaveDay={handleSaveDayData}
                   lastWeekAvgWeight={lastWeekAvgWeight}
                   initialIsOpen={index === 0}
+                  nutritionGoals={goalsForWeek}
                 />
               );
             })}
           </section>
         )}
       </div>
+      <GoalsModal
+          open={showGoalsModal}
+          onClose={() => setShowGoalsModal(false)}
+          goals={nutritionGoals}
+          onChange={handleSaveNutritionGoals}
+      />
     </main>
   );
 };

@@ -1,3 +1,5 @@
+import {Level} from "../utils/nutrition";
+
 export interface DayData {
   date: string;
   kcal: number | null;
@@ -18,6 +20,13 @@ export type DayUpdateData = {
   weight: number | null;
 };
 
+export interface NutritionGoals {
+  validFrom: string;
+  kcalLevels: Level[];
+  proteinLevels: Level[];
+  fatLevels: Level[];
+}
+
 export interface EditEntryFormProps {
   entryData: DayData;
   onSave: (updatedData: DayUpdateData) => void;
@@ -27,6 +36,7 @@ export interface EditEntryFormProps {
 export interface DayCardProps {
   day: DayData;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
+  nutritionGoals: NutritionGoals;
 }
 
 export interface WeekCardProps {
@@ -34,4 +44,5 @@ export interface WeekCardProps {
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   lastWeekAvgWeight: number | null;
   initialIsOpen: boolean;
+  nutritionGoals: NutritionGoals;
 }

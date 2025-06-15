@@ -1,5 +1,5 @@
 import React from "react";
-import {getCurrentLevel, Level} from "../utils/nutrition";
+import {getColorHex, getCurrentLevel, Level} from "../utils/nutrition";
 
 export interface ProgressBarProps {
     current: number | null;
@@ -10,11 +10,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                                                      current,
                                                      levels,
                                                  }) => {
+    if (levels.length === 0) return;
     const min = levels[0].value;
     const max = levels[levels.length - 1].value;
     const spanTotal = max - min || 1;
 
-    const frameColor = getCurrentLevel(current, levels)?.color ?? '#FFFFFF';
+    const level = getCurrentLevel(current, levels)?.color;
+    const frameColor = level ? getColorHex(level) : '#FFFFFF';
 
     const segments = levels.map(({value, color}, i) => {
         const start = value;
@@ -24,7 +26,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         return (
             <div
                 key={i}
-                style={{width: `${widthPct}%`, backgroundColor: color}}
+                style={{width: `${widthPct}%`, backgroundColor: getColorHex(color)}}
                 className="h-full"
             />
         );

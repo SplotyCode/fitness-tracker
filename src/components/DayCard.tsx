@@ -5,16 +5,14 @@ import {DayCardProps, DayUpdateData} from "./types";
 import ProgressBar from "./ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 import {
-  getKcalLevels,
-  getProteinLevels,
-  getFatLevels,
   getOptimalValue,
-  getDayColor
+  getDayColor, getColorHex
 } from "../utils/nutrition";
 
 const DayCard: React.FC<DayCardProps> = ({
   day,
   onSaveDay,
+  nutritionGoals
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
@@ -31,7 +29,7 @@ const DayCard: React.FC<DayCardProps> = ({
     setIsEditing(false);
   };
 
-  const dailyLevel = getDayColor(day);
+  const dailyLevel = getDayColor(day, nutritionGoals);
 
   if (isEditing) {
     return (
@@ -50,7 +48,7 @@ const DayCard: React.FC<DayCardProps> = ({
       className="flex flex-col gap-2 p-4 rounded-xl bg-white bg-opacity-0"
       style={{
         border: `1px solid ${
-          (dailyLevel) ? dailyLevel : "rgba(255, 255, 255, 0.1)"
+          (dailyLevel) ? getColorHex(dailyLevel) : "rgba(255, 255, 255, 0.1)"
         }`,
       }}
     >
@@ -66,11 +64,11 @@ const DayCard: React.FC<DayCardProps> = ({
               <FaFire className="text-orange-500" />
               <span className="text-lg font-semibold">{day.kcal ?? '-'} kcal</span>
             </div>
-            <span className="text-sm text-zinc-400">{getOptimalValue(getKcalLevels())}</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(nutritionGoals.kcalLevels)}</span>
           </div>
           <ProgressBar
             current={day.kcal}
-            levels={getKcalLevels()}
+            levels={nutritionGoals.kcalLevels}
           />
         </div>
         <div>
@@ -79,9 +77,9 @@ const DayCard: React.FC<DayCardProps> = ({
               <FaDrumstickBite className="text-red-400" />
               <span className="text-zinc-400">{day.protein ?? '- '}g protein</span>
             </div>
-            <span className="text-sm text-zinc-400">{getOptimalValue(getProteinLevels())}g</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(nutritionGoals.proteinLevels)}g</span>
           </div>
-          <ProgressBar current={day.protein} levels={getProteinLevels()} />
+          <ProgressBar current={day.protein} levels={nutritionGoals.proteinLevels} />
         </div>
         <div>
           <div className="flex justify-between mb-1">
@@ -89,9 +87,9 @@ const DayCard: React.FC<DayCardProps> = ({
               <FaOilCan className="text-yellow-400" />
               <span className="text-zinc-400">{day.fat ?? '- '}g fat</span>
             </div>
-            <span className="text-sm text-zinc-400">{getOptimalValue(getFatLevels())}g</span>
+            <span className="text-sm text-zinc-400">{getOptimalValue(nutritionGoals.fatLevels)}g</span>
           </div>
-          <ProgressBar current={day.fat} levels={getFatLevels()}/>
+          <ProgressBar current={day.fat} levels={nutritionGoals.fatLevels}/>
         </div>
       </div>
       <button 
