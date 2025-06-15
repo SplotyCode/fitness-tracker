@@ -4,17 +4,18 @@ import React, {useCallback, useEffect, useState} from "react";
 import {signInWithPopup, signOut, User} from "firebase/auth";
 import {auth, db} from "../firebase";
 import {doc, DocumentReference, onSnapshot, setDoc} from "firebase/firestore";
-import {FaBullseye, FaSignOutAlt, FaSpinner} from "react-icons/fa";
+import {FaSpinner} from "react-icons/fa";
 
 import {DayUpdateData, NutritionGoals, WeekData} from "./types";
-import WeekCard from "./WeekCard";
-import {calculateAverageForWeek, getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
+import {getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
-import {findNutritionGoalsForWeek, getDefaultNutritionGoal} from "../utils/nutrition";
+import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
-import useSyncStatus, {SyncStatus} from "../storage/useSyncStatus";
+import useSyncStatus from "../storage/useSyncStatus";
+import WeekList from "./Weekly/WeekList";
+import Header from "./Header";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = toUtcMidnight(new Date())
@@ -218,60 +219,15 @@ const WeightTracker: React.FC = () => {
     <main className="p-8 min-h-screen text-white bg-neutral-900">
       <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
         <section className="p-4 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
-          <header className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold">Weight Progress</h2>
-            <div>
-              {user ? (
-                <div className="flex items-center gap-4">
-                  <span className="text-sm">Welcome, {user.displayName || user.email}</span>
-                  <SyncBadge state={syncStatus} />
-                  <button
-                      onClick={() => setShowGoalsModal(true)}
-                      className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                  >
-                    <FaBullseye />
-                    Goals
-                  </button>
-                  <button
-                    onClick={handleSignOut}
-                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 flex items-center gap-2"
-                  >
-                    <FaSignOutAlt />
-                    Sign Out
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          </header>
-          {user ? (
-            <>
-              <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
-            </>
-          ) : (
-            <div className="text-center py-10">
-              <p className="text-xl mb-4">Please sign in to track your progress.</p>
-            </div>
-          )}
+          <Header
+              user={user}
+              syncStatus={syncStatus}
+              onShowGoals={() => setShowGoalsModal(true)}
+              onSignOut={handleSignOut}
+          />
+          <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
         </section>
-        {user && (
-          <section className="flex flex-col gap-6">
-            {[...weeklyData].reverse().map((week, index) => {
-              const originalIndex = weeklyData.length - 1 - index;
-              const lastWeekAvgWeight = originalIndex > 0 ? calculateAverageForWeek(weeklyData[originalIndex - 1], "weight") : null;
-              const goalsForWeek = findNutritionGoalsForWeek(week, nutritionGoals);
-              return (
-                <WeekCard
-                  key={week.weekNum}
-                  week={week}
-                  onSaveDay={handleSaveDayData}
-                  lastWeekAvgWeight={lastWeekAvgWeight}
-                  initialIsOpen={index === 0}
-                  nutritionGoals={goalsForWeek}
-                />
-              );
-            })}
-          </section>
-        )}
+        <WeekList weeks={weeklyData} onSaveDay={handleSaveDayData} goals={nutritionGoals} />
       </div>
       <GoalsModal
           open={showGoalsModal}
@@ -282,19 +238,5 @@ const WeightTracker: React.FC = () => {
     </main>
   );
 };
-function SyncBadge({ state }: { state: SyncStatus }) {
-  if (state === 'synced') {
-    return null;
-  }
-  const mapping = {
-    pending: ['⟳',  'Saving…'],
-    offline: ['⚠️', 'Offline – changes queued'],
-  } as const;
-  const [icon, tooltip] = mapping[state];
-  return (
-      <span title={tooltip} className="ml-2 text-sm">
-      {icon}
-    </span>
-  );
-}
+
 export default WeightTracker;

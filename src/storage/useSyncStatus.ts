@@ -10,7 +10,6 @@ export default function useSyncStatus<T>(
     const [status, setStatus] = useState<SyncStatus>('synced');
     useEffect(() => {
         if (!ref) return;
-        // Live listener (data AND metadata)
         const unsub = onSnapshot(
             ref,
             { includeMetadataChanges: true },

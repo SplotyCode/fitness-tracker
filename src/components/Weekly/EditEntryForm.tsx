@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { FaWeight, FaFire, FaDrumstickBite, FaOilCan, FaSave, FaTimes } from "react-icons/fa";
 
-import { EditEntryFormProps } from "./types";
+import { EditEntryFormProps } from "../types";
 
 const EditEntryForm: React.FC<EditEntryFormProps> = ({
   entryData,
