@@ -10,6 +10,7 @@ export interface Level {
     value: number;
     color: NutritionColor;
 }
+
 const colorHexMap: Record<NutritionColor, string> = {
     [NutritionColor.RED]: "#f85149",
     [NutritionColor.YELLOW]: "#facc15",

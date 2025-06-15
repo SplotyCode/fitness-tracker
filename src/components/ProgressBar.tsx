@@ -10,6 +10,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
                                                      current,
                                                      levels,
                                                  }) => {
+    if (levels.length === 0) return;
     const min = levels[0].value;
     const max = levels[levels.length - 1].value;
     const spanTotal = max - min || 1;
