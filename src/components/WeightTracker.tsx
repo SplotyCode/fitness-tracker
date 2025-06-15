@@ -1,8 +1,7 @@
 "use client";
 
 import React, {useCallback, useEffect, useState} from "react";
-import {signInWithPopup, signOut, User} from "firebase/auth";
-import {auth, db} from "../firebase";
+import {db} from "../firebase";
 import {doc, onSnapshot, setDoc, collection} from "firebase/firestore";
 import {FaSpinner} from "react-icons/fa";
 
@@ -10,105 +9,74 @@ import {DayData, DayUpdateData, NutritionGoals, WeekData} from "./types";
 import {fillAndGroupDays} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
-import {AuthProvider} from "@firebase/auth";
 import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
 import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
-import useSyncStatus from "../storage/useSyncStatus";
+import useSyncStatus from "../hooks/useSyncStatus";
+import {useAuth} from "../hooks/useAuth";
 
 const WeightTracker: React.FC = () => {
-  const [user, setUser] = useState<User | null>(null);
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
+  const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
 
   useEffect(() => {
-    let unsubscribeDays: (() => void) | null = null;
-    let unsubscribeGoals: (() => void) | null = null;
+    if (!user) {
+      setWeeklyData([]);
+      setNutritionGoals([]);
+      return;
+    }
 
-    const authUnsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      setIsLoading(true);
-      setUser(currentUser);
+    setIsLoading(true);
+    clearPendingWrites();
 
-      if (unsubscribeDays) unsubscribeDays();
-      if (unsubscribeGoals) unsubscribeGoals();
-      clearPendingWrites();
+    console.log("User signed in:", user.uid);
+    const daysCollectionRef = collection(db, "users", user.uid, "days");
+    const unsubscribeDays = onSnapshot(daysCollectionRef, { includeMetadataChanges: true }, (querySnapshot) => {
+      registerPendingWrites('days', querySnapshot.metadata.hasPendingWrites);
+      const daysFromFirestore = querySnapshot.docs.map(doc => ({
+        ...(doc.data() as Omit<DayData, 'date'>),
+        date: new Date(doc.id).toISOString(),
+      }));
+      setWeeklyData(fillAndGroupDays(daysFromFirestore));
+      console.log("Day data updated from Firestore snapshot.");
+      setIsLoading(false);
+    }, (error) => {
+      console.error("Error listening to days collection:", error);
+      setIsLoading(false);
+    });
 
-      if (currentUser) {
-        console.log("User signed in:", currentUser.uid);
-        const daysCollectionRef = collection(db, "users", currentUser.uid, "days");
-        unsubscribeDays = onSnapshot(daysCollectionRef, { includeMetadataChanges: true }, (querySnapshot) => {
-          registerPendingWrites('days', querySnapshot.metadata.hasPendingWrites);
-          const daysFromFirestore = querySnapshot.docs.map(doc => ({
-            ...(doc.data() as Omit<DayData, 'date'>),
-            date: new Date(doc.id).toISOString(),
-          }));
-          setWeeklyData(fillAndGroupDays(daysFromFirestore));
-          console.log("Day data updated from Firestore snapshot.");
-          setIsLoading(false);
-        }, (error) => {
-          console.error("Error listening to days collection:", error);
-          setIsLoading(false);
-        });
-
-        const profileDocRef = doc(db, "users", currentUser.uid, "profile", "userProfile");
-        unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
-          registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
-          if (docSnap.exists()) {
-            const goals = docSnap.data()?.nutritionGoals;
-            if (goals && goals.length > 0) {
-              setNutritionGoals(goals);
-            } else {
-              const defaultGoals = [getDefaultNutritionGoal()];
-              setNutritionGoals(defaultGoals);
-              setDoc(profileDocRef, { nutritionGoals: defaultGoals }, { merge: true });
-            }
-          } else {
-            console.log("No profile data, initializing with default goals.");
-            const defaultGoals = [getDefaultNutritionGoal()];
-            setNutritionGoals(defaultGoals);
-            setDoc(profileDocRef, { nutritionGoals: defaultGoals });
-          }
-        }, (error) => {
-          console.error("Error listening to profile document:", error);
-        });
-
+    const profileDocRef = doc(db, "users", user.uid, "profile", "userProfile");
+    const unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
+      registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
+      if (docSnap.exists()) {
+        const goals = docSnap.data()?.nutritionGoals;
+        if (goals && goals.length > 0) {
+          setNutritionGoals(goals);
+        } else {
+          const defaultGoals = [getDefaultNutritionGoal()];
+          setNutritionGoals(defaultGoals);
+          setDoc(profileDocRef, { nutritionGoals: defaultGoals }, { merge: true });
+        }
       } else {
-        console.log("User signed out");
-        setWeeklyData([]);
-        setNutritionGoals([]);
-        setIsLoading(false);
+        console.log("No profile data, initializing with default goals.");
+        const defaultGoals = [getDefaultNutritionGoal()];
+        setNutritionGoals(defaultGoals);
+        setDoc(profileDocRef, { nutritionGoals: defaultGoals });
       }
+    }, (error) => {
+      console.error("Error listening to profile document:", error);
     });
 
     return () => {
-      authUnsubscribe();
-      if (unsubscribeDays) unsubscribeDays();
-      if (unsubscribeGoals) unsubscribeGoals();
+      unsubscribeDays();
+      unsubscribeGoals();
     };
-  }, []);
-
-  const handleSignIn = async (provider: AuthProvider) => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      setUser(result.user);
-    } catch (error) {
-      console.error("Sign-in error:", error);
-      throw error;
-    }
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await signOut(auth);
-      setUser(null);
-    } catch (error) {
-      console.error("Sign out error:", error);
-    }
-  };
+  }, [user, clearPendingWrites, registerPendingWrites]);
 
   const handleSaveDayData = useCallback(async (date: string, updatedDay: DayUpdateData) => {
     if (!user) {
@@ -138,7 +106,7 @@ const WeightTracker: React.FC = () => {
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <main className="p-8 min-h-screen text-white bg-neutral-900 flex justify-center items-center">
         <div className="flex items-center gap-3">
