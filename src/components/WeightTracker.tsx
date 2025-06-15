@@ -3,69 +3,19 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {signInWithPopup, signOut, User} from "firebase/auth";
 import {auth, db} from "../firebase";
-import {doc, DocumentReference, onSnapshot, setDoc} from "firebase/firestore";
+import {doc, onSnapshot, setDoc, collection} from "firebase/firestore";
 import {FaSpinner} from "react-icons/fa";
 
-import {DayUpdateData, NutritionGoals, WeekData} from "./types";
-import {getMonday, isSameDateTime, toUtcMidnight} from "../utils/weekly_calculations";
+import {DayData, DayUpdateData, NutritionGoals, WeekData} from "./types";
+import {fillAndGroupDays} from "../utils/weekly_calculations";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
 import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
-import useSyncStatus from "../storage/useSyncStatus";
+import {SyncStatus} from "../storage/useSyncStatus";
 import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
-
-const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
-  const today = toUtcMidnight(new Date())
-  const data = existingData ? structuredClone(existingData) : [];
-
-  const lastFilledActual = getLastFilledDate(data);
-  let date: Date;
-  if (lastFilledActual) {
-    date = new Date(lastFilledActual);
-    date.setDate(date.getDate() + 1);
-  } else {
-    date = getMonday(today);
-  }
-
-  while (date <= today) {
-    const isoDate = date.toISOString();
-    const monday = getMonday(date);
-    let week = data[data.length - 1];
-
-    if (!week || !isSameDateTime(getMonday(new Date(week.days[0]?.date)), monday)) {
-      const newWeek: WeekData = {
-        weekNum: week ? week.weekNum + 1 : 1,
-        days: []
-      };
-      data.push(newWeek);
-      week = newWeek;
-    }
-    if (!week.days.some(d => d.date === isoDate)) {
-      week.days.push({
-        date: isoDate,
-        kcal: null,
-        protein: null,
-        fat: null,
-        weight: null,
-      });
-      week.days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }
-
-    date.setDate(date.getDate() + 1);
-  }
-
-  return data;
-};
-
-const getLastFilledDate = (data: WeekData[]): Date | null => {
-  const lastWeek = data[data.length - 1];
-  if (!lastWeek || lastWeek.days.length === 0) return null;
-  const lastDay = new Date(lastWeek.days[lastWeek.days.length - 1].date);
-  return toUtcMidnight(lastDay);
-};
 
 const WeightTracker: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -73,70 +23,68 @@ const WeightTracker: React.FC = () => {
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const userDocRef: DocumentReference | null = React.useMemo(
-      () =>
-          user
-              ? doc(db, 'users', user.uid, 'weeklyData', 'data')
-              : null,
-      [user]
-  );
-  const syncStatus = useSyncStatus(userDocRef, db);
+  const syncStatus: SyncStatus = 'synced';
 
   useEffect(() => {
-    let unsubscribeFirestore: (() => void) | null = null;
+    let unsubscribeDays: (() => void) | null = null;
+    let unsubscribeGoals: (() => void) | null = null;
 
     const authUnsubscribe = auth.onAuthStateChanged(async (currentUser) => {
       setIsLoading(true);
       setUser(currentUser);
 
-      if (unsubscribeFirestore) {
-        unsubscribeFirestore();
-        unsubscribeFirestore = null;
-      }
+      if (unsubscribeDays) unsubscribeDays();
+      if (unsubscribeGoals) unsubscribeGoals();
 
       if (currentUser) {
         console.log("User signed in:", currentUser.uid);
-        const userDocRef = doc(db, "users", currentUser.uid, "weeklyData", "data");
+        const daysCollectionRef = collection(db, "users", currentUser.uid, "days");
+        unsubscribeDays = onSnapshot(daysCollectionRef, (querySnapshot) => {
+          const daysFromFirestore = querySnapshot.docs.map(doc => ({
+            ...(doc.data() as Omit<DayData, 'date'>),
+            date: new Date(doc.id).toISOString(),
+          }));
+          setWeeklyData(fillAndGroupDays(daysFromFirestore));
+          console.log("Day data updated from Firestore snapshot.");
+          setIsLoading(false);
+        }, (error) => {
+          console.error("Error listening to days collection:", error);
+          setIsLoading(false);
+        });
 
-        unsubscribeFirestore = onSnapshot(userDocRef, (docSnap) => {
+        const profileDocRef = doc(db, "users", currentUser.uid, "profile", "userProfile");
+        unsubscribeGoals = onSnapshot(profileDocRef, (docSnap) => {
           if (docSnap.exists()) {
-            const dataFromFirestore = docSnap.data();
-            const validData = Array.isArray(dataFromFirestore?.weeks) ? dataFromFirestore.weeks : null;
-            setWeeklyData(fillMissingDaysAndWeeks(validData));
-
-            const goals = dataFromFirestore?.nutritionGoals;
+            const goals = docSnap.data()?.nutritionGoals;
             if (goals && goals.length > 0) {
               setNutritionGoals(goals);
             } else {
               const defaultGoals = [getDefaultNutritionGoal()];
               setNutritionGoals(defaultGoals);
-              setDoc(userDocRef, { nutritionGoals: defaultGoals }, { merge: true });
+              setDoc(profileDocRef, { nutritionGoals: defaultGoals }, { merge: true });
             }
-            console.log("Data updated from Firestore snapshot");
           } else {
-            console.log("No data in Firestore for this user, initializing.");
+            console.log("No profile data, initializing with default goals.");
             const defaultGoals = [getDefaultNutritionGoal()];
-            const filledWeeks = fillMissingDaysAndWeeks(null);
-            setWeeklyData(filledWeeks);
             setNutritionGoals(defaultGoals);
-            setDoc(userDocRef, { weeks: filledWeeks, nutritionGoals: defaultGoals });
+            setDoc(profileDocRef, { nutritionGoals: defaultGoals });
           }
         }, (error) => {
-          console.error("Error listening to Firestore snapshots:", error);
+          console.error("Error listening to profile document:", error);
         });
+
       } else {
         console.log("User signed out");
         setWeeklyData([]);
         setNutritionGoals([]);
+        setIsLoading(false);
       }
-      setIsLoading(false);
     });
 
     return () => {
       authUnsubscribe();
-      if (unsubscribeFirestore) {
-        unsubscribeFirestore();
-      }
+      if (unsubscribeDays) unsubscribeDays();
+      if (unsubscribeGoals) unsubscribeGoals();
     };
   }, []);
 
@@ -144,7 +92,7 @@ const WeightTracker: React.FC = () => {
     try {
       const result = await signInWithPopup(auth, provider);
       setUser(result.user);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Sign-in error:", error);
       throw error;
     }
@@ -165,31 +113,18 @@ const WeightTracker: React.FC = () => {
       return;
     }
 
-    const updatedWeeklyData = weeklyData.map(week => ({
-      ...week,
-      days: week.days.map(day =>
-        day.date === date
-          ? {
-            ...day,
-            ...updatedDay
-          }
-          : day
-      ),
-    }));
-    setWeeklyData(updatedWeeklyData);
-
-    const userDocRef = doc(db, "users", user.uid, "weeklyData", "data");
+    const docId = new Date(date).toISOString().split('T')[0];
+    const dayDocRef = doc(db, "users", user.uid, "days", docId);
     try {
-      await setDoc(userDocRef, { weeks: updatedWeeklyData, nutritionGoals });
+      await setDoc(dayDocRef, updatedDay, { merge: true });
     } catch (error) {
       console.error("Error saving data to Firestore:", error);
     }
-  }, [user, weeklyData, nutritionGoals]);
+  }, [user]);
 
   const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
         if (!user) return;
-        setNutritionGoals(newGoals);
-        const userDocRef = doc(db, "users", user.uid, "weeklyData", "data");
+        const userDocRef = doc(db, "users", user.uid, "profile", "userProfile");
         try {
           await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
         } catch (err) {
