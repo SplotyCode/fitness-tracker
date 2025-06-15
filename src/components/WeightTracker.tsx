@@ -3,7 +3,7 @@
 import React, {useCallback, useEffect, useState} from "react";
 import {signInWithPopup, signOut, User} from "firebase/auth";
 import {auth, db} from "../firebase";
-import {doc, onSnapshot, setDoc} from "firebase/firestore";
+import {doc, DocumentReference, onSnapshot, setDoc} from "firebase/firestore";
 import {FaBullseye, FaSignOutAlt, FaSpinner} from "react-icons/fa";
 
 import {DayUpdateData, NutritionGoals, WeekData} from "./types";
@@ -14,6 +14,7 @@ import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
 import {findNutritionGoalsForWeek, getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
+import useSyncStatus, {SyncStatus} from "../storage/useSyncStatus";
 
 const fillMissingDaysAndWeeks = (existingData: WeekData[] | null): WeekData[] => {
   const today = toUtcMidnight(new Date())
@@ -70,6 +71,15 @@ const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  const userDocRef: DocumentReference | null = React.useMemo(
+      () =>
+          user
+              ? doc(db, 'users', user.uid, 'weeklyData', 'data')
+              : null,
+      [user]
+  );
+  const syncStatus = useSyncStatus(userDocRef, db);
 
   useEffect(() => {
     let unsubscribeFirestore: (() => void) | null = null;
@@ -214,6 +224,7 @@ const WeightTracker: React.FC = () => {
               {user ? (
                 <div className="flex items-center gap-4">
                   <span className="text-sm">Welcome, {user.displayName || user.email}</span>
+                  <SyncBadge state={syncStatus} />
                   <button
                       onClick={() => setShowGoalsModal(true)}
                       className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
@@ -271,5 +282,19 @@ const WeightTracker: React.FC = () => {
     </main>
   );
 };
-
+function SyncBadge({ state }: { state: SyncStatus }) {
+  if (state === 'synced') {
+    return null;
+  }
+  const mapping = {
+    pending: ['⟳',  'Saving…'],
+    offline: ['⚠️', 'Offline – changes queued'],
+  } as const;
+  const [icon, tooltip] = mapping[state];
+  return (
+      <span title={tooltip} className="ml-2 text-sm">
+      {icon}
+    </span>
+  );
+}
 export default WeightTracker;
