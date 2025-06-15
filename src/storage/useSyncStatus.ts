@@ -1,38 +1,40 @@
-import { useEffect, useState } from 'react';
-import { onSnapshot, waitForPendingWrites, Firestore, DocumentReference } from 'firebase/firestore';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 
 export type SyncStatus = 'synced' | 'pending' | 'offline';
 
-export default function useSyncStatus<T>(
-    ref: DocumentReference<T> | null,
-    db: Firestore
-): SyncStatus {
-    const [status, setStatus] = useState<SyncStatus>('synced');
+export default function useSyncStatus(): {
+    registerPendingWrites: (key: string, hasPending: boolean) => void;
+    syncStatus: SyncStatus;
+    clearPendingWrites: () => void
+} {
+    const [isOnline, setIsOnline] = useState(true);
+    const [pendingWrites, setPendingWrites] = useState<{ [key: string]: boolean }>({});
+
     useEffect(() => {
-        if (!ref) return;
-        const unsub = onSnapshot(
-            ref,
-            { includeMetadataChanges: true },
-            (snap) => {
-                if (!navigator.onLine || snap.metadata.fromCache) {
-                    setStatus('offline');
-                } else if (snap.metadata.hasPendingWrites) {
-                    setStatus('pending');
-                } else {
-                    setStatus('synced');
-                }
-            }
-        );
-        const flushListener = () => {
-            waitForPendingWrites(db).then(() => setStatus((s) =>
-                s !== 'offline' ? 'synced' : s
-            ));
-        };
-        window.addEventListener('online', flushListener);
+        setIsOnline(navigator.onLine);
+        const handleOnline = () => setIsOnline(true);
+        const handleOffline = () => setIsOnline(false);
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
         return () => {
-            unsub();
-            window.removeEventListener('online', flushListener);
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
         };
-    }, [ref, db]);
-    return status;
+    }, []);
+    console.log(pendingWrites)
+
+    const registerPendingWrites = useCallback((key: string, hasPending: boolean) => {
+        setPendingWrites(prev => ({ ...prev, [key]: hasPending }));
+    }, []);
+    const clearPendingWrites = useCallback(() => {
+        setPendingWrites({});
+    }, []);
+
+    const syncStatus: SyncStatus = useMemo(() => {
+        if (!isOnline) return 'offline';
+        if (Object.values(pendingWrites).some(status => status)) return 'pending';
+        return 'synced';
+    }, [isOnline, pendingWrites]);
+
+    return { syncStatus, registerPendingWrites, clearPendingWrites };
 }

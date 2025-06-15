@@ -13,9 +13,9 @@ import Login from "./Login";
 import {AuthProvider} from "@firebase/auth";
 import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
-import {SyncStatus} from "../storage/useSyncStatus";
 import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
+import useSyncStatus from "../storage/useSyncStatus";
 
 const WeightTracker: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -23,7 +23,7 @@ const WeightTracker: React.FC = () => {
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const syncStatus: SyncStatus = 'synced';
+  const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
 
   useEffect(() => {
     let unsubscribeDays: (() => void) | null = null;
@@ -35,11 +35,13 @@ const WeightTracker: React.FC = () => {
 
       if (unsubscribeDays) unsubscribeDays();
       if (unsubscribeGoals) unsubscribeGoals();
+      clearPendingWrites();
 
       if (currentUser) {
         console.log("User signed in:", currentUser.uid);
         const daysCollectionRef = collection(db, "users", currentUser.uid, "days");
-        unsubscribeDays = onSnapshot(daysCollectionRef, (querySnapshot) => {
+        unsubscribeDays = onSnapshot(daysCollectionRef, { includeMetadataChanges: true }, (querySnapshot) => {
+          registerPendingWrites('days', querySnapshot.metadata.hasPendingWrites);
           const daysFromFirestore = querySnapshot.docs.map(doc => ({
             ...(doc.data() as Omit<DayData, 'date'>),
             date: new Date(doc.id).toISOString(),
@@ -53,7 +55,8 @@ const WeightTracker: React.FC = () => {
         });
 
         const profileDocRef = doc(db, "users", currentUser.uid, "profile", "userProfile");
-        unsubscribeGoals = onSnapshot(profileDocRef, (docSnap) => {
+        unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
+          registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
           if (docSnap.exists()) {
             const goals = docSnap.data()?.nutritionGoals;
             if (goals && goals.length > 0) {
@@ -123,15 +126,15 @@ const WeightTracker: React.FC = () => {
   }, [user]);
 
   const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
-        if (!user) return;
-        const userDocRef = doc(db, "users", user.uid, "profile", "userProfile");
-        try {
-          await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
-        } catch (err) {
-          console.error("Error saving nutrition goals:", err);
-        }
-      },
-      [user]
+    if (!user) return;
+    const userDocRef = doc(db, "users", user.uid, "profile", "userProfile");
+    try {
+      await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
+    } catch (err) {
+      console.error("Error saving nutrition goals:", err);
+    }
+  },
+  [user]
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
 
@@ -155,20 +158,20 @@ const WeightTracker: React.FC = () => {
       <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
         <section className="p-4 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
           <Header
-              user={user}
-              syncStatus={syncStatus}
-              onShowGoals={() => setShowGoalsModal(true)}
-              onSignOut={handleSignOut}
+            user={user}
+            syncStatus={syncStatus}
+            onShowGoals={() => setShowGoalsModal(true)}
+            onSignOut={handleSignOut}
           />
           <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
         </section>
         <WeekList weeks={weeklyData} onSaveDay={handleSaveDayData} goals={nutritionGoals} />
       </div>
       <GoalsModal
-          open={showGoalsModal}
-          onClose={() => setShowGoalsModal(false)}
-          goals={nutritionGoals}
-          onChange={handleSaveNutritionGoals}
+        open={showGoalsModal}
+        onClose={() => setShowGoalsModal(false)}
+        goals={nutritionGoals}
+        onChange={handleSaveNutritionGoals}
       />
     </main>
   );
