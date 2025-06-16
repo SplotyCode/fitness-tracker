@@ -15,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ onSignIn }) => {
       setError(null);
       await onSignIn(provider);
     } catch (err) {
-      setError(err.message || 'An unexpected error occurred. Please try again.');
+      setError(err instanceof Error ? err.message : 'An unexpected error occurred. Please try again.');
     }
   };
 

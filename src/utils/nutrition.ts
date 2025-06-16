@@ -37,7 +37,7 @@ export const getCurrentLevel = (
   currentValue: number | null,
   sortedLevels: Level[],
 ): Level | undefined => {
-  if (!currentValue || !sortedLevels) {
+  if (!currentValue || sortedLevels.length === 0) {
     return undefined;
   }
   let activeIndex = 0;

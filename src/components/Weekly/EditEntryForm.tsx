@@ -14,12 +14,10 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
 
   useEffect(() => {
-    if (entryData) {
-      setCurrentKcal(entryData.kcal);
-      setCurrentProtein(entryData.protein);
-      setCurrentFat(entryData.fat);
-      setCurrentWeight(entryData.weight);
-    }
+    setCurrentKcal(entryData.kcal);
+    setCurrentProtein(entryData.protein);
+    setCurrentFat(entryData.fat);
+    setCurrentWeight(entryData.weight);
   }, [entryData]);
 
   const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
@@ -62,7 +60,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
             placeholder="Weight (kg)"
             aria-label="Enter weight in kilograms"
             className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-            value={currentWeight || ""}
+            value={currentWeight ?? ""}
             onChange={handleWeightChange}
           />
         </div>
@@ -73,7 +71,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
             placeholder="Calories"
             aria-label="Enter calories consumed"
             className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-            value={currentKcal || ""}
+            value={currentKcal ?? ""}
             onChange={handleKcalChange}
           />
         </div>
@@ -85,7 +83,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
               placeholder="Protein (g)"
               aria-label="Enter protein in grams"
               className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-              value={currentProtein || ""}
+              value={currentProtein ?? ""}
               onChange={handleProteinChange}
             />
           </div>
@@ -96,7 +94,7 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
               placeholder="Fat (g)"
               aria-label="Enter fat in grams"
               className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-              value={currentFat || ""}
+              value={currentFat ?? ""}
               onChange={handleFatChange}
             />
           </div>

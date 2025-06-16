@@ -38,7 +38,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
   const dataWithAvg: ChartPoint[] = flatData.map((p, i, arr) => {
     if (p.weight === null) return { ...p };
     const slice = arr.slice(Math.max(0, i - 6), i + 1);
-    const weights = slice.map(d => d.weight).filter(w => w !== null) as number[];
+    const weights = slice.map(d => d.weight).filter(w => w !== null);
     const avg = weights.length ? +(weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1) : undefined;
     return { ...p, average: avg };
   });
@@ -73,11 +73,14 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
     });
   }
 
-  const weights = flatData.map(d => d.weight).filter(w => w !== null) as number[];
+  const weights = flatData.map(d => d.weight).filter(w => w !== null);
 
   const minY = weights.length > 0 ? Math.floor(Math.min(...weights) - 2) : 80;
   const maxY = weights.length > 0 ? Math.ceil(Math.max(...weights) + 2) : 120;
 
+  /* eslint-disable @typescript-eslint/no-unsafe-argument */
+  /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+  /* eslint-disable @typescript-eslint/no-unsafe-assignment */
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -116,7 +119,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
               return [`${value} kg`, label];
             }}
             labelFormatter={(label: string, payload: Payload<number, string>[]) => {
-              const date = payload?.[0]?.payload?.date;
+              const date = payload[0]?.payload?.date;
               return date ? new Date(date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : label;
             }}
           />
@@ -134,7 +137,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
             stroke="#1a7f37"
             strokeWidth={2}
             dot={false}
-            connectNulls
+            connectNulls={true}
             strokeDasharray="4 4"
             activeDot={false}
           />
@@ -147,7 +150,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
                 stroke={"#f59e0b"}
                 strokeWidth={1.5}
                 dot={false}
-                connectNulls
+                connectNulls={true}
                 strokeDasharray="5 5"
                 activeDot={false}
               />

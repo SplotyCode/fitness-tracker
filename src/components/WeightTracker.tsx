@@ -54,7 +54,7 @@ const WeightTracker: React.FC = () => {
     const unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
       registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
       if (docSnap.exists()) {
-        const goals = docSnap.data()?.nutritionGoals;
+        const goals = docSnap.data().nutritionGoals as NutritionGoals[] | null;
         if (goals && goals.length > 0) {
           setNutritionGoals(goals);
         } else {

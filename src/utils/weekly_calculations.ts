@@ -8,7 +8,7 @@ export const calculateAverageForWeek = (
   if (validDays.length === 0) {
     return null;
   }
-  const total = validDays.reduce((sum, day) => sum + (day[key] || 0), 0);
+  const total = validDays.reduce((sum, day) => sum + (day[key] ?? 0), 0);
   return total / validDays.length;
 };
 
@@ -44,7 +44,7 @@ const generateWeeksFromRange = (startDate: Date, endDate: Date, existingDays: Da
     const isoDate = currentDay.toISOString();
     const monday = getMonday(currentDay);
 
-    let week = weeks[weeks.length - 1];
+    let week = weeks.at(-1);
     if (!week || !isSameDateTime(getMonday(new Date(week.days[0]?.date)), monday)) {
       const newWeek: WeekData = {
         weekNum: week ? week.weekNum + 1 : 1,
