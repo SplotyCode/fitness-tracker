@@ -26,23 +26,3 @@ export interface NutritionGoals {
   proteinLevels: Level[];
   fatLevels: Level[];
 }
-
-export interface EditEntryFormProps {
-  entryData: DayData;
-  onSave: (updatedData: DayUpdateData) => void;
-  onCancel: () => void;
-}
-
-export interface DayCardProps {
-  day: DayData;
-  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
-  nutritionGoals: NutritionGoals;
-}
-
-export interface WeekCardProps {
-  week: WeekData;
-  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
-  lastWeekAvgWeight: number | null;
-  initialIsOpen: boolean;
-  nutritionGoals: NutritionGoals;
-}

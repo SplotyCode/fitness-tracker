@@ -1,17 +1,25 @@
-import React, { useState } from "react";
+import {JSX, useState} from "react";
 import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
-import { WeekCardProps } from "../types";
+import {DayUpdateData, NutritionGoals, WeekData} from "../types";
 import DayCard from "./DayCard";
 import { calculateAverageForWeek } from "../../utils/weekly_calculations";
 
-const WeekCard: React.FC<WeekCardProps> = ({
+interface WeekCardProps {
+  week: WeekData;
+  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
+  lastWeekAvgWeight: number | null;
+  initialIsOpen: boolean;
+  nutritionGoals: NutritionGoals;
+}
+
+const WeekCard = ({
   week,
   onSaveDay,
   lastWeekAvgWeight,
   initialIsOpen,
   nutritionGoals,
-}) => {
+}: WeekCardProps): JSX.Element => {
   const [showDays, setShowDays] = useState(initialIsOpen);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");

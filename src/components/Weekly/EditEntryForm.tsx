@@ -1,13 +1,19 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, JSX} from "react";
 import { FaWeight, FaFire, FaDrumstickBite, FaOilCan, FaSave, FaTimes } from "react-icons/fa";
 
-import { EditEntryFormProps } from "../types";
+import {DayData, DayUpdateData} from "../types";
 
-const EditEntryForm: React.FC<EditEntryFormProps> = ({
+interface EditEntryFormProps {
+  entryData: DayData;
+  onSave: (updatedData: DayUpdateData) => void;
+  onCancel: () => void;
+}
+
+const EditEntryForm = ({
   entryData,
   onSave,
   onCancel,
-}) => {
+}: EditEntryFormProps): JSX.Element => {
   const [currentKcal, setCurrentKcal] = useState<number | null>(null);
   const [currentProtein, setCurrentProtein] = useState<number | null>(null);
   const [currentFat, setCurrentFat] = useState<number | null>(null);

@@ -2,7 +2,7 @@ import {calculateAverageForWeek} from "../../utils/weekly_calculations";
 import {findNutritionGoalsForWeek} from "../../utils/nutrition";
 import WeekCard from "./WeekCard";
 import {DayUpdateData, NutritionGoals, WeekData} from "../types";
-import React, {JSX} from "react";
+import {JSX} from "react";
 
 interface Props {
   weeks: WeekData[];
