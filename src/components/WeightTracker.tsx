@@ -19,7 +19,7 @@ import {useAuth} from "../hooks/useAuth";
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
 
   const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
   const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
@@ -54,7 +54,7 @@ const WeightTracker: React.FC = () => {
     const unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
       registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
       if (docSnap.exists()) {
-        const goals = docSnap.data()?.nutritionGoals;
+        const goals = docSnap.data().nutritionGoals as NutritionGoals[] | null;
         if (goals && goals.length > 0) {
           setNutritionGoals(goals);
         } else {

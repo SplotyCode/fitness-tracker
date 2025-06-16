@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import {JSX, useState} from "react";
 import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
-import {DayCardProps, DayUpdateData} from "../types";
+import {DayData, DayUpdateData, NutritionGoals} from "../types";
 import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 import {
@@ -9,22 +9,28 @@ import {
   getDayColor, getColorHex
 } from "../../utils/nutrition";
 
-const DayCard: React.FC<DayCardProps> = ({
+interface DayCardProps {
+  day: DayData;
+  onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
+  nutritionGoals: NutritionGoals;
+}
+
+const DayCard = ({
   day,
   onSaveDay,
   nutritionGoals
-}) => {
+}: DayCardProps): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleEdit = () => {
+  const handleEdit = (): void => {
     setIsEditing(true);
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (): void => {
     setIsEditing(false);
   };
 
-  const handleSaveEdit = (updatedData: DayUpdateData) => {
+  const handleSaveEdit = (updatedData: DayUpdateData): void => {
     onSaveDay(day.date, updatedData);
     setIsEditing(false);
   };

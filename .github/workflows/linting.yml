@@ -1,0 +1,21 @@
+name: Lint
+on: push
+permissions:
+  contents: read
+  security-events: write
+jobs:
+  eslint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          cache: 'npm'
+      - run: npm ci
+      - name: Run ESLint (SARIF)
+        run: npm run lint-ci
+      - name: Upload SARIF to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          category: eslint-linting
+          sarif_file: eslint-results.sarif

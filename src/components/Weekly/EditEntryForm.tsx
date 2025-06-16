@@ -1,53 +1,57 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, JSX} from "react";
 import { FaWeight, FaFire, FaDrumstickBite, FaOilCan, FaSave, FaTimes } from "react-icons/fa";
 
-import { EditEntryFormProps } from "../types";
+import {DayData, DayUpdateData} from "../types";
 
-const EditEntryForm: React.FC<EditEntryFormProps> = ({
+interface EditEntryFormProps {
+  entryData: DayData;
+  onSave: (updatedData: DayUpdateData) => void;
+  onCancel: () => void;
+}
+
+const EditEntryForm = ({
   entryData,
   onSave,
   onCancel,
-}) => {
+}: EditEntryFormProps): JSX.Element => {
   const [currentKcal, setCurrentKcal] = useState<number | null>(null);
   const [currentProtein, setCurrentProtein] = useState<number | null>(null);
   const [currentFat, setCurrentFat] = useState<number | null>(null);
   const [currentWeight, setCurrentWeight] = useState<number | null>(null);
 
   useEffect(() => {
-    if (entryData) {
-      setCurrentKcal(entryData.kcal);
-      setCurrentProtein(entryData.protein);
-      setCurrentFat(entryData.fat);
-      setCurrentWeight(entryData.weight);
-    }
+    setCurrentKcal(entryData.kcal);
+    setCurrentProtein(entryData.protein);
+    setCurrentFat(entryData.fat);
+    setCurrentWeight(entryData.weight);
   }, [entryData]);
 
-  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value.replace(',', '.')) : null;
     setCurrentWeight(value);
   };
 
-  const handleKcalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleKcalChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentKcal(value);
   };
 
-  const handleProteinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProteinChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentProtein(value);
   };
 
-  const handleFatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFatChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentFat(value);
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     onSave({
-        weight: currentWeight,
-        kcal: currentKcal,
-        protein: currentProtein,
-        fat: currentFat
+      weight: currentWeight,
+      kcal: currentKcal,
+      protein: currentProtein,
+      fat: currentFat
     });
   };
 
@@ -62,19 +66,19 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
             placeholder="Weight (kg)"
             aria-label="Enter weight in kilograms"
             className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-            value={currentWeight || ""}
+            value={currentWeight ?? ""}
             onChange={handleWeightChange}
           />
         </div>
         <div className="relative">
           <FaFire className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500" />
           <input
-              type="number"
-              placeholder="Calories"
-              aria-label="Enter calories consumed"
-              className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-              value={currentKcal || ""}
-              onChange={handleKcalChange}
+            type="number"
+            placeholder="Calories"
+            aria-label="Enter calories consumed"
+            className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
+            value={currentKcal ?? ""}
+            onChange={handleKcalChange}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -85,19 +89,19 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
               placeholder="Protein (g)"
               aria-label="Enter protein in grams"
               className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-              value={currentProtein || ""}
+              value={currentProtein ?? ""}
               onChange={handleProteinChange}
             />
           </div>
           <div className="relative">
             <FaOilCan className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-400" />
             <input
-                type="number"
-                placeholder="Fat (g)"
-                aria-label="Enter fat in grams"
-                className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-                value={currentFat || ""}
-                onChange={handleFatChange}
+              type="number"
+              placeholder="Fat (g)"
+              aria-label="Enter fat in grams"
+              className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
+              value={currentFat ?? ""}
+              onChange={handleFatChange}
             />
           </div>
         </div>

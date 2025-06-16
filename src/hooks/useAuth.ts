@@ -2,7 +2,12 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged, signOut, signInWithPopup, User, AuthProvider } from "firebase/auth";
 import { auth } from "../firebase";
 
-export function useAuth() {
+export function useAuth(): {
+  user: User | null;
+  isLoading: boolean;
+  handleSignIn: (provider: AuthProvider) => Promise<void>;
+  handleSignOut: () => Promise<void>;
+  } {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -14,7 +19,7 @@ export function useAuth() {
     return () => unsubscribe();
   }, []);
 
-  const handleSignIn = async (provider: AuthProvider) => {
+  const handleSignIn = async (provider: AuthProvider): Promise<void> => {
     try {
       await signInWithPopup(auth, provider);
     } catch (error) {
@@ -23,11 +28,11 @@ export function useAuth() {
     }
   };
 
-  const handleSignOut = async () => {
+  const handleSignOut = async (): Promise<void> => {
     try {
       await signOut(auth);
     } catch (error) {
-        console.error("Sign out error:", error);
+      console.error("Sign out error:", error);
     }
   };
 
