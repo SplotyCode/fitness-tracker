@@ -22,27 +22,27 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
     }
   }, [entryData]);
 
-  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleWeightChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value.replace(',', '.')) : null;
     setCurrentWeight(value);
   };
 
-  const handleKcalChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleKcalChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentKcal(value);
   };
 
-  const handleProteinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProteinChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentProtein(value);
   };
 
-  const handleFatChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFatChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const value = e.target.value ? Number(e.target.value) : null;
     setCurrentFat(value);
   };
 
-  const handleSave = () => {
+  const handleSave = (): void => {
     onSave({
       weight: currentWeight,
       kcal: currentKcal,

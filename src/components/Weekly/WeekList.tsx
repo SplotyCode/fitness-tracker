@@ -2,6 +2,7 @@ import {calculateAverageForWeek} from "../../utils/weekly_calculations";
 import {findNutritionGoalsForWeek} from "../../utils/nutrition";
 import WeekCard from "./WeekCard";
 import {DayUpdateData, NutritionGoals, WeekData} from "../types";
+import React, {JSX} from "react";
 
 interface Props {
   weeks: WeekData[];
@@ -9,7 +10,7 @@ interface Props {
   goals: NutritionGoals[];
 }
 
-const WeekList = ({weeks, onSaveDay, goals}: Props) => {
+const WeekList = ({weeks, onSaveDay, goals}: Props): JSX.Element  => {
   return (
     <section className="flex flex-col gap-6">
       {[...weeks].reverse().map((week, index) => {

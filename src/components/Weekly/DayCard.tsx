@@ -16,15 +16,15 @@ const DayCard: React.FC<DayCardProps> = ({
 }) => {
   const [isEditing, setIsEditing] = useState(false);
 
-  const handleEdit = () => {
+  const handleEdit = (): void => {
     setIsEditing(true);
   };
 
-  const handleCancelEdit = () => {
+  const handleCancelEdit = (): void => {
     setIsEditing(false);
   };
 
-  const handleSaveEdit = (updatedData: DayUpdateData) => {
+  const handleSaveEdit = (updatedData: DayUpdateData): void => {
     onSaveDay(day.date, updatedData);
     setIsEditing(false);
   };

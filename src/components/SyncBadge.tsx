@@ -1,6 +1,7 @@
+import { JSX } from "react";
 import {SyncStatus} from "../storage/useSyncStatus";
 
-const SyncBadge = ({ state }: { state: SyncStatus }) => {
+const SyncBadge = ({ state }: { state: SyncStatus }): JSX.Element | null => {
   if (state === 'synced') {
     return null;
   }

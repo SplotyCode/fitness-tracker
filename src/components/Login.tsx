@@ -10,7 +10,7 @@ interface LoginProps {
 const Login: React.FC<LoginProps> = ({ onSignIn }) => {
   const [error, setError] = useState<string | null>(null);
 
-  const handleSignInClick = async (provider: AuthProvider) => {
+  const handleSignInClick = async (provider: AuthProvider): Promise<void> => {
     try {
       setError(null);
       await onSignIn(provider);

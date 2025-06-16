@@ -23,7 +23,7 @@ const WeekCard: React.FC<WeekCardProps> = ({
       ? parseFloat((currentWeekAvgWeight - lastWeekAvgWeight).toFixed(1))
       : null;
 
-  const handleToggle = () => {
+  const handleToggle = (): void => {
     setShowDays(!showDays);
   };
 

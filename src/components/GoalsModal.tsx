@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 import { FaArrowLeft, FaPlus, FaSave, FaTrashAlt } from "react-icons/fa";
 import { NutritionGoals } from "./types";
 import {Level, NutritionColor} from "../utils/nutrition";
@@ -14,7 +14,7 @@ interface GoalsModalProps {
 type ViewMode = "list" | "edit";
 
 const emptyLevel: Level = { value: 0, color: NutritionColor.GREEN };
-const sortGoals = (a: NutritionGoals[], asc = true) =>
+const sortGoals = (a: NutritionGoals[], asc = true): NutritionGoals[] =>
   [...a].sort((x, y) =>
     asc
       ? new Date(x.validFrom).getTime() - new Date(y.validFrom).getTime()
@@ -40,20 +40,20 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
   }, [mode, editing]);
 
     type MacroKey = "kcalLevels" | "proteinLevels" | "fatLevels";
-    const getSetter = (k: MacroKey) =>
+    const getSetter = (k: MacroKey): Dispatch<SetStateAction<Level[]>> =>
       k === "kcalLevels" ? setKcalLevels : k === "proteinLevels" ? setProteinLevels : setFatLevels;
 
-    const updateLevel = (macro: MacroKey, idx: number, part: Partial<Level>) => {
+    const updateLevel = (macro: MacroKey, idx: number, part: Partial<Level>): void => {
       getSetter(macro)((prev) => prev.map((l, i) => (i === idx ? { ...l, ...part } : l)));
     };
-    const addLevel = (macro: MacroKey) => {
+    const addLevel = (macro: MacroKey): void => {
       getSetter(macro)((prev) => [...prev, { ...emptyLevel }]);
     };
-    const removeLevel = (macro: MacroKey, idx: number) => {
+    const removeLevel = (macro: MacroKey, idx: number): void => {
       getSetter(macro)((prev) => prev.filter((_, i) => i !== idx));
     };
 
-    const saveGoalSet = () => {
+    const saveGoalSet = (): void => {
       const newGoals: NutritionGoals = {
         validFrom,
         kcalLevels: [...kcalLevels].sort((a, b) => a.value - b.value),
@@ -73,7 +73,7 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
       setEditing(null);
     };
 
-    const deleteGoal = (goal: NutritionGoals) => {
+    const deleteGoal = (goal: NutritionGoals): void => {
       if (confirm("Delete this goal set?")) {
         onChange(goals.filter((g) => g !== goal));
       }

@@ -18,6 +18,14 @@ export default [
     rules: {
       'react/react-in-jsx-scope': 'off',
       'indent': ['error', 2, { SwitchCase: 1 }],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': 'error',
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        { allowExpressions: true, allowTypedFunctionExpressions: true },
+      ],
+
+
     },
     settings: {
       react: { version: 'detect' },
