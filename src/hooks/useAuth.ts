@@ -27,7 +27,7 @@ export function useAuth() {
     try {
       await signOut(auth);
     } catch (error) {
-        console.error("Sign out error:", error);
+      console.error("Sign out error:", error);
     }
   };
 

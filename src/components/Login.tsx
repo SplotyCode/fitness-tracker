@@ -14,7 +14,7 @@ const Login: React.FC<LoginProps> = ({ onSignIn }) => {
     try {
       setError(null);
       await onSignIn(provider);
-    } catch (err: any) {
+    } catch (err) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
     }
   };
@@ -31,15 +31,15 @@ const Login: React.FC<LoginProps> = ({ onSignIn }) => {
         )}
         <div className="flex flex-col gap-4">
           <button
-              onClick={() => handleSignInClick(new GoogleAuthProvider())}
-              className="w-full px-4 py-3 text-lg font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-blue-500 flex items-center justify-center gap-3"
+            onClick={() => handleSignInClick(new GoogleAuthProvider())}
+            className="w-full px-4 py-3 text-lg font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-blue-500 flex items-center justify-center gap-3"
           >
             <FaGoogle className="text-xl" />
             Sign in with Google
           </button>
           <button
-              onClick={() => handleSignInClick(new GithubAuthProvider())}
-              className="w-full px-4 py-3 text-lg font-medium text-white bg-gray-700 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-gray-500 flex items-center justify-center gap-3"
+            onClick={() => handleSignInClick(new GithubAuthProvider())}
+            className="w-full px-4 py-3 text-lg font-medium text-white bg-gray-700 rounded-md hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-neutral-900 focus:ring-gray-500 flex items-center justify-center gap-3"
           >
             <FaGithub className="text-xl" />
             Sign in with GitHub

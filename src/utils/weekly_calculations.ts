@@ -38,7 +38,7 @@ export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
 
 const generateWeeksFromRange = (startDate: Date, endDate: Date, existingDays: DayData[]): WeekData[] => {
   const weeks: WeekData[] = [];
-  let currentDay = new Date(startDate);
+  const currentDay = new Date(startDate);
 
   while (currentDay <= endDate) {
     const isoDate = currentDay.toISOString();

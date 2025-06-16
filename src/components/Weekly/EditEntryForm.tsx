@@ -44,10 +44,10 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
 
   const handleSave = () => {
     onSave({
-        weight: currentWeight,
-        kcal: currentKcal,
-        protein: currentProtein,
-        fat: currentFat
+      weight: currentWeight,
+      kcal: currentKcal,
+      protein: currentProtein,
+      fat: currentFat
     });
   };
 
@@ -69,12 +69,12 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
         <div className="relative">
           <FaFire className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500" />
           <input
-              type="number"
-              placeholder="Calories"
-              aria-label="Enter calories consumed"
-              className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-              value={currentKcal || ""}
-              onChange={handleKcalChange}
+            type="number"
+            placeholder="Calories"
+            aria-label="Enter calories consumed"
+            className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
+            value={currentKcal || ""}
+            onChange={handleKcalChange}
           />
         </div>
         <div className="grid grid-cols-2 gap-4">
@@ -92,12 +92,12 @@ const EditEntryForm: React.FC<EditEntryFormProps> = ({
           <div className="relative">
             <FaOilCan className="absolute left-3 top-1/2 transform -translate-y-1/2 text-yellow-400" />
             <input
-                type="number"
-                placeholder="Fat (g)"
-                aria-label="Enter fat in grams"
-                className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
-                value={currentFat || ""}
-                onChange={handleFatChange}
+              type="number"
+              placeholder="Fat (g)"
+              aria-label="Enter fat in grams"
+              className="p-2 pl-10 w-full text-white rounded-md border border-solid bg-neutral-900 border-white border-opacity-10"
+              value={currentFat || ""}
+              onChange={handleFatChange}
             />
           </div>
         </div>

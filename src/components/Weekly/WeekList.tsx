@@ -1,11 +1,11 @@
 import {calculateAverageForWeek} from "../../utils/weekly_calculations";
 import {findNutritionGoalsForWeek} from "../../utils/nutrition";
 import WeekCard from "./WeekCard";
-import {NutritionGoals, WeekData} from "../types";
+import {DayUpdateData, NutritionGoals, WeekData} from "../types";
 
 interface Props {
   weeks: WeekData[];
-  onSaveDay: (d: string, data: any) => void;
+  onSaveDay: (date: string, data: DayUpdateData) => void;
   goals: NutritionGoals[];
 }
 

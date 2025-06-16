@@ -13,12 +13,12 @@ export interface WeekData {
   days: DayData[];
 }
 
-export type DayUpdateData = {
+export interface DayUpdateData {
   kcal: number | null;
   protein: number | null;
   fat: number | null;
   weight: number | null;
-};
+}
 
 export interface NutritionGoals {
   validFrom: string;
