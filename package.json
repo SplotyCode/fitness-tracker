@@ -9,7 +9,7 @@
     "buildAndDeploy": "vite build && firebase deploy",
     "check": "tsc --noEmit",
     "lint": "eslint src --report-unused-disable-directives --max-warnings 0",
-    "lint-ci": "eslint src --report-unused-disable-directives --max-warnings 0 --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif",
+    "lint-ci": "SARIF_ESLINT_IGNORE_SUPPRESSED=true eslint src --report-unused-disable-directives --max-warnings 0 --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif",
     "lint-fix": "eslint --fix src --report-unused-disable-directives --max-warnings 0"
   },
   "keywords": [],
