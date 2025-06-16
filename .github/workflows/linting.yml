@@ -13,7 +13,7 @@ jobs:
           cache: 'npm'
       - run: npm ci
       - name: Run ESLint (SARIF)
-        run: npx eslint src --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
+        run: npm run lint-ci
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3
         with:
