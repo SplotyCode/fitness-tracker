@@ -2,7 +2,7 @@ name: Lint
 on: push
 permissions:
   contents: read
-  checks: write
+  security-events: write
 jobs:
   eslint:
     runs-on: ubuntu-latest
@@ -15,7 +15,7 @@ jobs:
       - name: Run ESLint (SARIF)
         run: npx eslint src --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
       - name: Upload SARIF to GitHub
-        uses: jakebailey/analysis-action@v1
+        uses: github/codeql-action/upload-sarif@v3
         with:
-          name: ESLint Results
+          category: eslint-linting
           sarif_file: eslint-results.sarif
