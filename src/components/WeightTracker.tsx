@@ -1,7 +1,7 @@
 "use client";
 
-import React, {useCallback, useEffect, useState} from "react";
-import {db} from "../firebase";
+import React, {useCallback, useEffect, useRef, useState} from "react";
+import {db} from "../repository/firebase";
 import {doc, onSnapshot, setDoc, collection} from "firebase/firestore";
 import {FaSpinner} from "react-icons/fa";
 
@@ -15,11 +15,15 @@ import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
+import TrainingModal from "./TrainingModal";
+import {Training} from "../utils/exercises";
 
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const trainingsRef = useRef<{ id: string; data: Training }[]>([]);
+  const [trainingsVersion, setTrainingsVersion] = useState(0);
 
   const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
   const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
@@ -72,9 +76,21 @@ const WeightTracker: React.FC = () => {
       console.error("Error listening to profile document:", error);
     });
 
+    const trainingsColRef = collection(db, "users", user.uid, "trainings");
+    const unsubscribeTrainings = onSnapshot(trainingsColRef, { includeMetadataChanges: true }, (snap) => {
+      registerPendingWrites('trainings', snap.metadata.hasPendingWrites);
+      const arr = snap.docs.map(d => ({ id: d.id, data: d.data() as Training }));
+      arr.sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
+      trainingsRef.current = arr;
+      setTrainingsVersion(v => v + 1);
+    }, (error) => {
+      console.error("Error listening to trainings collection:", error);
+    });
+
     return () => {
       unsubscribeDays();
       unsubscribeGoals();
+      unsubscribeTrainings();
     };
   }, [user, clearPendingWrites, registerPendingWrites]);
 
@@ -105,6 +121,48 @@ const WeightTracker: React.FC = () => {
   [user]
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [showTrainingModal, setShowTrainingModal] = useState(false);
+  const [editingTraining, setEditingTraining] = useState<{ id: string; data: Training } | null>(null);
+
+  const handleOpenNewTraining = (): void => {
+    setEditingTraining(null);
+    setShowTrainingModal(true);
+  };
+
+  const handleTrainingSaved = (t: { id: string; data: Training }): void => {
+    const existingIdx = trainingsRef.current.findIndex(x => x.id === t.id);
+    if (existingIdx >= 0) {
+      const next = [...trainingsRef.current];
+      next[existingIdx] = t;
+      trainingsRef.current = next;
+    } else {
+      trainingsRef.current = [t, ...trainingsRef.current].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
+    }
+    setTrainingsVersion(v => v + 1);
+  };
+
+  const handleTrainingDeleted = (id: string): void => {
+    trainingsRef.current = trainingsRef.current.filter(t => t.id !== id);
+    setTrainingsVersion(v => v + 1);
+  };
+
+  const trainingsByDay = React.useMemo(() => {
+    const byDay: Record<string, { id: string; data: Training }[]> = {};
+    for (const t of trainingsRef.current) {
+      const key = t.data.day;
+      if (!byDay[key]) byDay[key] = [];
+      byDay[key].push(t);
+    }
+    return byDay;
+  }, [trainingsVersion]);
+
+  const handleOpenTrainingById = (trainingId: string): void => {
+    const found = trainingsRef.current.find(t => t.id === trainingId) || null;
+    if (found) {
+      setEditingTraining(found);
+      setShowTrainingModal(true);
+    }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -129,17 +187,32 @@ const WeightTracker: React.FC = () => {
             user={user}
             syncStatus={syncStatus}
             onShowGoals={() => setShowGoalsModal(true)}
+            onAddTraining={handleOpenNewTraining}
             onSignOut={handleSignOut}
           />
           <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
         </section>
-        <WeekList weeks={weeklyData} onSaveDay={handleSaveDayData} goals={nutritionGoals} />
+        <WeekList
+          weeks={weeklyData}
+          onSaveDay={handleSaveDayData}
+          goals={nutritionGoals}
+          trainingsByDay={trainingsByDay}
+          onOpenTrainingById={handleOpenTrainingById}
+        />
       </div>
       <GoalsModal
         open={showGoalsModal}
         onClose={() => setShowGoalsModal(false)}
         goals={nutritionGoals}
         onChange={handleSaveNutritionGoals}
+      />
+      <TrainingModal
+        open={showTrainingModal}
+        userId={user.uid}
+        training={editingTraining}
+        onClose={() => setShowTrainingModal(false)}
+        onSaved={handleTrainingSaved}
+        onDeleted={handleTrainingDeleted}
       />
     </main>
   );

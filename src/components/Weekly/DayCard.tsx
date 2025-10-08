@@ -1,7 +1,8 @@
-import {JSX, useState} from "react";
+import {JSX, useMemo, useState} from "react";
 import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
 import {DayData, DayUpdateData, NutritionGoals} from "../types";
+import {Training} from "../../utils/exercises";
 import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 import {
@@ -13,14 +14,19 @@ interface DayCardProps {
   day: DayData;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   nutritionGoals: NutritionGoals;
+  trainings?: { id: string; data: Training }[];
+  onOpenTrainingById?: (trainingId: string) => void;
 }
 
 const DayCard = ({
   day,
   onSaveDay,
-  nutritionGoals
+  nutritionGoals,
+  trainings = [],
+  onOpenTrainingById
 }: DayCardProps): JSX.Element => {
   const [isEditing, setIsEditing] = useState(false);
+  const [showTrainingMenu, setShowTrainingMenu] = useState(false);
 
   const handleEdit = (): void => {
     setIsEditing(true);
@@ -37,6 +43,9 @@ const DayCard = ({
 
   const dailyLevel = getDayColor(day, nutritionGoals);
 
+  const hasTrainings = (trainings?.length ?? 0) > 0;
+  const dayKey = useMemo(() => day.date.split('T')[0], [day.date]);
+
   if (isEditing) {
     return (
       <div className="p-4 rounded-xl bg-neutral-800 border border-solid border-sky-500">
@@ -51,13 +60,52 @@ const DayCard = ({
 
   return (
     <div
-      className="flex flex-col gap-2 p-4 rounded-xl bg-white bg-opacity-0"
+      className="relative flex flex-col gap-2 p-4 rounded-xl bg-white bg-opacity-0"
+      onClick={() => setShowTrainingMenu(false)}
       style={{
         border: `1px solid ${
           (dailyLevel) ? getColorHex(dailyLevel) : "rgba(255, 255, 255, 0.1)"
         }`,
       }}
     >
+      {hasTrainings && (
+        <button
+          className="absolute right-2 top-2 h-3 w-3 rounded-full bg-emerald-500 shadow ring-2 ring-emerald-300/40"
+          title="View training"
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!onOpenTrainingById) return;
+            if (trainings.length === 1) {
+              onOpenTrainingById(trainings[0].id);
+            } else {
+              setShowTrainingMenu((v) => !v);
+            }
+          }}
+        />
+      )}
+      {showTrainingMenu && trainings.length > 1 && (
+        <div className="absolute right-2 top-6 z-20 w-48 rounded-md border border-white/10 bg-zinc-900 p-1 shadow-lg">
+          <div className="px-2 py-1 text-xs uppercase tracking-wide text-zinc-400">Trainings</div>
+          <div className="max-h-60 overflow-y-auto">
+            {trainings
+              .slice()
+              .sort((a, b) => a.data.startedAt.toMillis() - b.data.startedAt.toMillis())
+              .map((t) => (
+                <button
+                  key={t.id}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowTrainingMenu(false);
+                    onOpenTrainingById?.(t.id);
+                  }}
+                  className="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
+                >
+                  <span>{new Date(t.data.startedAt.toDate()).toLocaleTimeString()}</span>
+                </button>
+              ))}
+          </div>
+        </div>
+      )}
       <time className="text-sm text-zinc-400">
         {new Date(day.date).toLocaleDateString("en-US", {
           weekday: "short",

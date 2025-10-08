@@ -2,15 +2,18 @@ import {calculateAverageForWeek} from "../../utils/weekly_calculations";
 import {findNutritionGoalsForWeek} from "../../utils/nutrition";
 import WeekCard from "./WeekCard";
 import {DayUpdateData, NutritionGoals, WeekData} from "../types";
+import {Training} from "../../utils/exercises";
 import {JSX} from "react";
 
 interface Props {
   weeks: WeekData[];
   onSaveDay: (date: string, data: DayUpdateData) => void;
   goals: NutritionGoals[];
+  trainingsByDay?: Record<string, { id: string; data: Training }[]>;
+  onOpenTrainingById?: (trainingId: string) => void;
 }
 
-const WeekList = ({weeks, onSaveDay, goals}: Props): JSX.Element  => {
+const WeekList = ({weeks, onSaveDay, goals, trainingsByDay = {}, onOpenTrainingById}: Props): JSX.Element  => {
   return (
     <section className="flex flex-col gap-6">
       {[...weeks].reverse().map((week, index) => {
@@ -25,6 +28,8 @@ const WeekList = ({weeks, onSaveDay, goals}: Props): JSX.Element  => {
             lastWeekAvgWeight={lastWeekAvgWeight}
             initialIsOpen={index === 0}
             nutritionGoals={goalsForWeek}
+            trainingsByDay={trainingsByDay}
+            onOpenTrainingById={onOpenTrainingById}
           />
         );
       })}

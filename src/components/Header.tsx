@@ -1,13 +1,14 @@
 import {SyncStatus} from "../hooks/useSyncStatus";
 import {User} from "firebase/auth";
 import SyncBadge from "./SyncBadge";
-import {FaBullseye, FaSignOutAlt} from "react-icons/fa";
+import {FaBullseye, FaPlus, FaSignOutAlt} from "react-icons/fa";
 import React from "react";
 
 interface WeightTrackerHeaderProps {
     user: User;
     syncStatus: SyncStatus;
     onShowGoals: () => void;
+    onAddTraining: () => void;
     onSignOut: () => void;
 }
 
@@ -15,6 +16,7 @@ const Header: React.FC<WeightTrackerHeaderProps> = ({
   user,
   syncStatus,
   onShowGoals,
+  onAddTraining,
   onSignOut,
 }) => {
   return (
@@ -25,6 +27,13 @@ const Header: React.FC<WeightTrackerHeaderProps> = ({
             Welcome, {user.displayName ?? user.email}
         </span>
         <SyncBadge state={syncStatus} />
+        <button
+          onClick={onAddTraining}
+          className="flex items-center gap-2 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+        >
+          <FaPlus />
+          New Training
+        </button>
         <button
           onClick={onShowGoals}
           className="flex items-center gap-2 rounded-md bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

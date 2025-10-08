@@ -2,6 +2,7 @@ import {JSX, useState} from "react";
 import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 import {DayUpdateData, NutritionGoals, WeekData} from "../types";
+import {Training} from "../../utils/exercises";
 import DayCard from "./DayCard";
 import { calculateAverageForWeek } from "../../utils/weekly_calculations";
 
@@ -11,6 +12,8 @@ interface WeekCardProps {
   lastWeekAvgWeight: number | null;
   initialIsOpen: boolean;
   nutritionGoals: NutritionGoals;
+  trainingsByDay?: Record<string, { id: string; data: Training }[]>;
+  onOpenTrainingById?: (trainingId: string) => void;
 }
 
 const WeekCard = ({
@@ -19,6 +22,8 @@ const WeekCard = ({
   lastWeekAvgWeight,
   initialIsOpen,
   nutritionGoals,
+  trainingsByDay = {},
+  onOpenTrainingById,
 }: WeekCardProps): JSX.Element => {
   const [showDays, setShowDays] = useState(initialIsOpen);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
@@ -95,6 +100,8 @@ const WeekCard = ({
                 day={day}
                 onSaveDay={onSaveDay}
                 nutritionGoals={nutritionGoals}
+                trainings={trainingsByDay[day.date.split('T')[0]]}
+                onOpenTrainingById={onOpenTrainingById}
               />
             ))}
           </div>
