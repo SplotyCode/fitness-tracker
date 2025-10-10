@@ -2,13 +2,13 @@ import {JSX, useState} from "react";
 import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
 import { DayData, DayUpdateData, NutritionGoals } from "../../domain";
-import {Training} from "../../utils/exercises";
+import {Training} from "../../domain";
 import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";
 import {
   getOptimalValue,
   getDayColor, getColorHex
-} from "../../utils/nutrition";
+} from "../../usecases/nutrition";
 
 interface DayCardProps {
   day: DayData;

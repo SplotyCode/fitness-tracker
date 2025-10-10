@@ -2,9 +2,9 @@ import {JSX, useState} from "react";
 import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
 import { DayUpdateData, NutritionGoals, WeekData } from "../../domain";
-import {Training} from "../../utils/exercises";
+import {Training} from "../../domain";
 import DayCard from "./DayCard";
-import { calculateAverageForWeek } from "../../utils/weekly_calculations";
+import { calculateAverageForWeek } from "../../usecases/weekly_calculations";
 
 interface WeekCardProps {
   week: WeekData;

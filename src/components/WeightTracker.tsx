@@ -12,7 +12,7 @@ import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
 import TrainingModal from "./TrainingModal";
-import {Training} from "../utils/exercises";
+import {Training} from "../domain";
 import { FirestoreDaysRepository, FirestoreProfileRepository, FirestoreTrainingsRepository } from "../repositories/firestore";
 import { subscribeWeeklyData, saveDayData as ucSaveDayData, subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals, subscribeTrainings, groupTrainingsByDay } from "../usecases";
 

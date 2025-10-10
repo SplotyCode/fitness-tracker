@@ -9,7 +9,7 @@ import {
   Dot,
 } from "recharts";
 import { WeekData } from "../domain";
-import { calculateAverageForWeek } from "../utils/weekly_calculations";
+import { calculateAverageForWeek } from "../usecases/weekly_calculations";
 import {Payload} from "recharts/types/component/DefaultTooltipContent";
 
 interface ChartPoint {

@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from "react";
 import { Timestamp } from "firebase/firestore";
-import { EXERCISES, ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet } from "../utils/exercises";
+import { EXERCISES, ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet } from "../domain";
 import { FaTimes, FaTrashAlt } from "react-icons/fa";
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip } from "recharts";
 import { FirestoreTrainingsRepository } from "../repositories/firestore";
@@ -239,7 +239,6 @@ const TrainingModal: React.FC<TrainingModalProps> = ({ open, userId, training, o
     const index = sets.length + 1;
     const base = {
       trainingId: tId,
-      day,
       exerciseId: exerciseId as ExerciseId,
       pauseSec,
       setIndex: index,

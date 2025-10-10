@@ -1,5 +1,5 @@
 import type { DayData, DayUpdateData, NutritionGoals } from "../domain";
-import type { TrainingSet, ExerciseId } from "../utils/exercises";
+import type { TrainingSet, ExerciseId } from "../domain";
 
 export type Unsubscribe = () => void;
 

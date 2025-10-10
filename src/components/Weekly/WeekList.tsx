@@ -1,8 +1,8 @@
-import {calculateAverageForWeek} from "../../utils/weekly_calculations";
-import {findNutritionGoalsForWeek} from "../../utils/nutrition";
+import {calculateAverageForWeek} from "../../usecases/weekly_calculations";
+import {findNutritionGoalsForWeek} from "../../usecases/nutrition";
 import WeekCard from "./WeekCard";
 import { DayUpdateData, NutritionGoals, WeekData } from "../../domain";
-import {Training} from "../../utils/exercises";
+import {Training} from "../../domain";
 import {JSX} from "react";
 
 interface Props {

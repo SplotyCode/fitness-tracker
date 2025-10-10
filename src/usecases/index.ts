@@ -1,6 +1,6 @@
 import type { DayData, WeekData, DayUpdateData, NutritionGoals } from "../domain";
-import { getDefaultNutritionGoal } from "../utils/nutrition";
-import { fillAndGroupDays } from "../utils/weekly_calculations";
+import { getDefaultNutritionGoal } from "./nutrition";
+import { fillAndGroupDays } from "./weekly_calculations";
 import type { DaysRepository, ProfileRepository, TrainingsRepository, Unsubscribe } from "../repositories";
 
 export interface SubscribeOptions {
@@ -80,10 +80,12 @@ export const subscribeTrainings = <TTraining,>(
   );
 };
 
+export type TrainingsByDayDto<TTraining extends { day: string }> = Record<string, { id: string; data: TTraining }[]>;
+
 export const groupTrainingsByDay = <TTraining extends { day: string }>(
   trainings: { id: string; data: TTraining }[]
-): Record<string, { id: string; data: TTraining }[]> => {
-  const byDay: Record<string, { id: string; data: TTraining }[]> = {};
+): TrainingsByDayDto<TTraining> => {
+  const byDay: TrainingsByDayDto<TTraining> = {};
   for (const t of trainings) {
     const key = t.data.day;
     if (!byDay[key]) byDay[key] = [];

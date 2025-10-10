@@ -1,5 +1,5 @@
 import React from "react";
-import { getColorHex, getCurrentLevel } from "../utils/nutrition";
+import { getColorHex, getCurrentLevel } from "../usecases/nutrition";
 import { Level } from "../domain";
 
 export interface ProgressBarProps {

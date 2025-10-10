@@ -2,7 +2,7 @@ import {collection, doc, onSnapshot, setDoc, deleteDoc, getDocs, orderBy, query,
 import {db} from "../firebase";
 import type {DayData, DayUpdateData, NutritionGoals} from "../domain";
 import type {DaysRepository, ProfileRepository, TrainingsRepository, Unsubscribe} from ".";
-import type { TrainingSet, ExerciseId, BilateralSet, UnilateralSet } from "../utils/exercises";
+import type { TrainingSet, ExerciseId, BilateralSet, UnilateralSet } from "../domain";
 
 export class FirestoreDaysRepository implements DaysRepository {
     subscribeDays(userId: string, cb: (days: DayData[], hasPendingWrites: boolean) => void, onError?: (e: unknown) => void): Unsubscribe {
