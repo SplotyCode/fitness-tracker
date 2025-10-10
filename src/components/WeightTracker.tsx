@@ -1,15 +1,11 @@
 "use client";
 
 import React, {useCallback, useEffect, useRef, useState} from "react";
-import {db} from "../repository/firebase";
-import {doc, onSnapshot, setDoc, collection} from "firebase/firestore";
 import {FaSpinner} from "react-icons/fa";
 
-import {DayData, DayUpdateData, NutritionGoals, WeekData} from "./types";
-import {fillAndGroupDays} from "../utils/weekly_calculations";
+import { DayUpdateData, NutritionGoals, WeekData } from "../domain";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
-import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
 import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
@@ -17,6 +13,8 @@ import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
 import TrainingModal from "./TrainingModal";
 import {Training} from "../utils/exercises";
+import { FirestoreDaysRepository, FirestoreProfileRepository, FirestoreTrainingsRepository } from "../repositories/firestore";
+import { subscribeWeeklyData, saveDayData as ucSaveDayData, subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals, subscribeTrainings, groupTrainingsByDay } from "../usecases";
 
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
@@ -38,54 +36,24 @@ const WeightTracker: React.FC = () => {
     setIsLoading(true);
     clearPendingWrites();
 
-    console.log("User signed in:", user.uid);
-    const daysCollectionRef = collection(db, "users", user.uid, "days");
-    const unsubscribeDays = onSnapshot(daysCollectionRef, { includeMetadataChanges: true }, (querySnapshot) => {
-      registerPendingWrites('days', querySnapshot.metadata.hasPendingWrites);
-      const daysFromFirestore = querySnapshot.docs.map(doc => ({
-        ...(doc.data() as Omit<DayData, 'date'>),
-        date: new Date(doc.id).toISOString(),
-      }));
-      setWeeklyData(fillAndGroupDays(daysFromFirestore));
-      console.log("Day data updated from Firestore snapshot.");
-      setIsLoading(false);
-    }, (error) => {
-      console.error("Error listening to days collection:", error);
-      setIsLoading(false);
-    });
+    const daysRepo = new FirestoreDaysRepository();
+    const profileRepo = new FirestoreProfileRepository();
+    const trainingsRepo = new FirestoreTrainingsRepository<Training>();
 
-    const profileDocRef = doc(db, "users", user.uid, "profile", "userProfile");
-    const unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
-      registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
-      if (docSnap.exists()) {
-        const goals = docSnap.data().nutritionGoals as NutritionGoals[] | null;
-        if (goals && goals.length > 0) {
-          setNutritionGoals(goals);
-        } else {
-          const defaultGoals = [getDefaultNutritionGoal()];
-          setNutritionGoals(defaultGoals);
-          setDoc(profileDocRef, { nutritionGoals: defaultGoals }, { merge: true });
-        }
-      } else {
-        console.log("No profile data, initializing with default goals.");
-        const defaultGoals = [getDefaultNutritionGoal()];
-        setNutritionGoals(defaultGoals);
-        setDoc(profileDocRef, { nutritionGoals: defaultGoals });
-      }
-    }, (error) => {
-      console.error("Error listening to profile document:", error);
-    });
+    const unsubscribeDays = subscribeWeeklyData(user.uid, daysRepo, (weeks) => {
+      setWeeklyData(weeks);
+      setIsLoading(false);
+    }, { onPendingWrites: registerPendingWrites });
 
-    const trainingsColRef = collection(db, "users", user.uid, "trainings");
-    const unsubscribeTrainings = onSnapshot(trainingsColRef, { includeMetadataChanges: true }, (snap) => {
-      registerPendingWrites('trainings', snap.metadata.hasPendingWrites);
-      const arr = snap.docs.map(d => ({ id: d.id, data: d.data() as Training }));
-      arr.sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
-      trainingsRef.current = arr;
+    const unsubscribeGoals = subscribeNutritionGoalsOrInit(user.uid, profileRepo, (goals) => {
+      setNutritionGoals(goals);
+    }, { onPendingWrites: registerPendingWrites });
+
+    const unsubscribeTrainings = subscribeTrainings<Training>(user.uid, trainingsRepo, (arr) => {
+      const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
+      trainingsRef.current = sorted;
       setTrainingsVersion(v => v + 1);
-    }, (error) => {
-      console.error("Error listening to trainings collection:", error);
-    });
+    }, { onPendingWrites: registerPendingWrites });
 
     return () => {
       unsubscribeDays();
@@ -99,21 +67,17 @@ const WeightTracker: React.FC = () => {
       console.error("Cannot save data: no user logged in.");
       return;
     }
-
-    const docId = new Date(date).toISOString().split('T')[0];
-    const dayDocRef = doc(db, "users", user.uid, "days", docId);
     try {
-      await setDoc(dayDocRef, updatedDay, { merge: true });
+      await ucSaveDayData(user.uid, new FirestoreDaysRepository(), date, updatedDay);
     } catch (error) {
-      console.error("Error saving data to Firestore:", error);
+      console.error("Error saving data:", error);
     }
   }, [user]);
 
   const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
     if (!user) return;
-    const userDocRef = doc(db, "users", user.uid, "profile", "userProfile");
     try {
-      await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
+      await ucSaveNutritionGoals(user.uid, new FirestoreProfileRepository(), newGoals);
     } catch (err) {
       console.error("Error saving nutrition goals:", err);
     }
@@ -147,13 +111,7 @@ const WeightTracker: React.FC = () => {
   };
 
   const trainingsByDay = React.useMemo(() => {
-    const byDay: Record<string, { id: string; data: Training }[]> = {};
-    for (const t of trainingsRef.current) {
-      const key = t.data.day;
-      if (!byDay[key]) byDay[key] = [];
-      byDay[key].push(t);
-    }
-    return byDay;
+    return groupTrainingsByDay(trainingsRef.current);
   }, [trainingsVersion]);
 
   const handleOpenTrainingById = (trainingId: string): void => {

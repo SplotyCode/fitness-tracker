@@ -1,8 +1,8 @@
 import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
 import { FaArrowLeft, FaPlus, FaSave, FaTrashAlt } from "react-icons/fa";
-import { NutritionGoals } from "./types";
-import {Level, NutritionColor} from "../utils/nutrition";
-import ProgressBar from "./ProgressBar"; // adjust path!
+import { NutritionGoals } from "../domain";
+import { Level, NutritionColor } from "../domain";
+import ProgressBar from "./ProgressBar";
 
 interface GoalsModalProps {
     open: boolean;

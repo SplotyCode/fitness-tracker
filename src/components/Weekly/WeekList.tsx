@@ -1,7 +1,7 @@
 import {calculateAverageForWeek} from "../../utils/weekly_calculations";
 import {findNutritionGoalsForWeek} from "../../utils/nutrition";
 import WeekCard from "./WeekCard";
-import {DayUpdateData, NutritionGoals, WeekData} from "../types";
+import { DayUpdateData, NutritionGoals, WeekData } from "../../domain";
 import {Training} from "../../utils/exercises";
 import {JSX} from "react";
 

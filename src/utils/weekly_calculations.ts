@@ -1,4 +1,4 @@
-import { WeekData, DayData } from "../components/types";
+import { WeekData, DayData } from "../domain";
 
 export const calculateAverageForWeek = (
   week: WeekData,

@@ -1,15 +1,4 @@
-import {DayData, NutritionGoals, WeekData} from "../components/types";
-
-export enum NutritionColor {
-    RED = "red",
-    YELLOW = "yellow",
-    GREEN = "green",
-}
-
-export interface Level {
-    value: number;
-    color: NutritionColor;
-}
+import { DayData, NutritionGoals, WeekData, NutritionColor, Level } from "../domain";
 
 const colorHexMap: Record<NutritionColor, string> = {
   [NutritionColor.RED]: "#f85149",

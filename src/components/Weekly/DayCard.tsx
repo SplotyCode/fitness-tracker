@@ -1,7 +1,7 @@
-import {JSX, useMemo, useState} from "react";
+import {JSX, useState} from "react";
 import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
 
-import {DayData, DayUpdateData, NutritionGoals} from "../types";
+import { DayData, DayUpdateData, NutritionGoals } from "../../domain";
 import {Training} from "../../utils/exercises";
 import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";
@@ -44,7 +44,6 @@ const DayCard = ({
   const dailyLevel = getDayColor(day, nutritionGoals);
 
   const hasTrainings = (trainings?.length ?? 0) > 0;
-  const dayKey = useMemo(() => day.date.split('T')[0], [day.date]);
 
   if (isEditing) {
     return (
