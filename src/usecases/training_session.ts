@@ -18,7 +18,6 @@ export interface ProgressMatrix {
     cells: (ProgressCell | null)[][]; // [row][col]
 }
 
-/** Add bilateral set with auto setIndex & per-exercise rest. */
 export async function addBilateralSet(
     repo: TrainingsRepository<Training>,
     params: {
@@ -57,7 +56,6 @@ export async function addBilateralSet(
     return repo.addSet(userId, trainingId, data);
 }
 
-/** Add unilateral set, flipping sides is handled in UI via prefill; here we store both sides. */
 export async function addUnilateralSet(
     repo: TrainingsRepository<Training>,
     params: {
@@ -109,10 +107,6 @@ export async function deleteSession(
     await repo.deleteTraining(userId, trainingId);
 }
 
-/**
- * Build a set-by-set progress matrix (last N sessions) for a given exercise.
- * Columns: latest → older. Rows: Set # (and side for unilateral).
- */
 export async function buildProgressMatrix(
     repo: TrainingsRepository<Training>,
     params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number }

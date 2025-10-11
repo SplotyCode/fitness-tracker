@@ -147,15 +147,15 @@ const WeightTracker: React.FC = () => {
         goals={nutritionGoals}
         onChange={handleSaveNutritionGoals}
       />
-      <TrainingModal
-        open={showTrainingModal}
-        userId={user.uid}
-        training={editingTraining}
-        onClose={() => setShowTrainingModal(false)}
-        onSaved={() => {}}
-        onDeleted={() => {}}
-        repo={new FirestoreTrainingsRepository<Training>()}
-      />
+        {showTrainingModal && (
+            <TrainingModal
+                open={showTrainingModal}
+                userId={user.uid}
+                training={editingTraining}
+                onClose={() => setShowTrainingModal(false)}
+                repo={new FirestoreTrainingsRepository<Training>()}
+            />
+        )}
     </main>
   );
 };
