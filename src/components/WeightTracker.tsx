@@ -11,7 +11,7 @@ import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
-import TrainingModal from "./TrainingModal";
+import TrainingModal from "./Training/TrainingModal";
 import {Training} from "../domain";
 import { FirestoreDaysRepository, FirestoreProfileRepository, FirestoreTrainingsRepository } from "../repositories/firestore";
 import { subscribeWeeklyData, saveDayData as ucSaveDayData, subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals, subscribeTrainings, groupTrainingsByDay } from "../usecases";
@@ -93,23 +93,6 @@ const WeightTracker: React.FC = () => {
     setShowTrainingModal(true);
   };
 
-  const handleTrainingSaved = (t: { id: string; data: Training }): void => {
-    const existingIdx = trainingsRef.current.findIndex(x => x.id === t.id);
-    if (existingIdx >= 0) {
-      const next = [...trainingsRef.current];
-      next[existingIdx] = t;
-      trainingsRef.current = next;
-    } else {
-      trainingsRef.current = [t, ...trainingsRef.current].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
-    }
-    setTrainingsVersion(v => v + 1);
-  };
-
-  const handleTrainingDeleted = (id: string): void => {
-    trainingsRef.current = trainingsRef.current.filter(t => t.id !== id);
-    setTrainingsVersion(v => v + 1);
-  };
-
   const trainingsByDay = React.useMemo(() => {
     return groupTrainingsByDay(trainingsRef.current);
   }, [trainingsVersion]);
@@ -169,8 +152,9 @@ const WeightTracker: React.FC = () => {
         userId={user.uid}
         training={editingTraining}
         onClose={() => setShowTrainingModal(false)}
-        onSaved={handleTrainingSaved}
-        onDeleted={handleTrainingDeleted}
+        onSaved={() => {}}
+        onDeleted={() => {}}
+        repo={new FirestoreTrainingsRepository<Training>()}
       />
     </main>
   );

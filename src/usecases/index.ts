@@ -49,7 +49,6 @@ export const subscribeNutritionGoalsOrInit = (
         try {
             await repo.saveNutritionGoals(userId, defaults);
         } catch (err) {
-          // Log the error to avoid silently swallowing initialization failures
           console.error("Failed to save default nutrition goals for user", userId, err);
         }
       }
