@@ -1,6 +1,5 @@
 import { JSX, useMemo, useState } from "react";
 import { Exercise, TrainingSet } from "../../domain/training";
-import QuickInputs from "./QuickInputs";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
 import { ProgressMatrix } from "../../usecases/training_session";
@@ -62,8 +61,15 @@ const ExerciseCard: React.FC<Props> = ({
 
       {isOpen && (
         <div className="p-4 flex flex-col gap-4">
-          <QuickInputs exercise={exercise} onAddSet={onAddSet} loadLastDefaults={loadLastDefaults}/>
-          <SetsTable setsToday={setsToday} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} unilateral={exercise.isUnilateral} />
+          <SetsTable
+            setsToday={setsToday}
+            onUpdateSet={onUpdateSet}
+            onDeleteSet={onDeleteSet}
+            unilateral={exercise.isUnilateral}
+            exerciseId={exercise.id}
+            onAddSet={onAddSet}
+            loadLastDefaults={loadLastDefaults}
+          />
           {showProgress && (
             <ProgressPanel loadProgress={loadProgress} />
           )}

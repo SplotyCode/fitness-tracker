@@ -4,6 +4,7 @@ import { subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDel
 import { addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining } from "../../usecases/training_session";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
+import { FaFlagCheckered, FaTrashAlt } from "react-icons/fa";
 
 interface Props {
     userId: string;
@@ -88,8 +89,12 @@ const TrainingModal = ({
                 seconds={30}
               />
             )}
-            <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600" onClick={handleEnd}>End session</button>
-            <button className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500" onClick={handleDelete}>Delete session</button>
+            <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
+              <FaFlagCheckered />
+            </button>
+            <button className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 flex items-center justify-center" onClick={handleDelete} aria-label="Delete session" title="Delete session">
+              <FaTrashAlt />
+            </button>
           </div>
         </header>
 
@@ -109,7 +114,7 @@ const TrainingModal = ({
               const disabled = addedExerciseIds.includes(e.id);
               return (
                 <option key={e.id} value={e.id} disabled={disabled}>
-                  {e.name}{disabled ? " (added)" : ""}
+                  {e.name}{disabled ? " (✓)" : ""}
                 </option>
               );
             })}
