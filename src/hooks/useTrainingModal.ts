@@ -1,7 +1,6 @@
-// hooks/useTrainingModal.ts
 import { useEffect, useMemo, useState } from "react";
 import { TrainingsRepository } from "../repositories";
-import { Training, TrainingSet, ExerciseId } from "../domain/training";
+import { Training, TrainingSet, ExerciseId } from "../domain";
 import { addBilateralSet, addUnilateralSet, endSession, deleteSession, buildProgressMatrix } from "../usecases/training_session";
 
 export function useTrainingModal(
@@ -25,7 +24,7 @@ export function useTrainingModal(
             setSets(arr);
         });
         return () => { unsubT(); unsubS(); };
-    }, [repo, userId, trainingId]);
+    }, [userId, trainingId]);
 
     const actions = useMemo(() => ({
         addBilateral: (p: { exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }) =>
@@ -40,7 +39,7 @@ export function useTrainingModal(
         remove: () => deleteSession(repo, { userId, trainingId: trainingId! }),
         progressFor: (exerciseId: ExerciseId, trainingsLimit = 5) =>
             buildProgressMatrix(repo, { userId, exerciseId, trainingsLimit }),
-    }), [repo, userId, trainingId]);
+    }), [userId, trainingId]);
 
     return { training, sets, hasPendingWrites, ...actions };
 }

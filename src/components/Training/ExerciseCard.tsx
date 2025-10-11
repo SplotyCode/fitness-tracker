@@ -1,5 +1,5 @@
 import { JSX, useMemo, useState } from "react";
-import { Exercise, ExerciseId, TrainingSet } from "../../domain/training";
+import { Exercise, ExerciseId, TrainingSet } from "../../domain";
 import QuickInputs from "./QuickInputs";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
@@ -44,9 +44,9 @@ export default function ExerciseCard({
             <header className="p-4 flex items-center justify-between bg-white/5 cursor-pointer" onClick={onToggle}>
                 <div className="flex items-center gap-3">
                     <h4 className="text-lg font-semibold">{exercise.name}</h4>
-                    <span className="text-xs px-2 py-1 rounded-full bg-neutral-700">
-            {exercise.isUnilateral ? "Unilateral" : "Bilateral"}
-          </span>
+                    {exercise.isUnilateral && (
+                        <span className="text-xs px-2 py-1 rounded-full bg-neutral-700">Unilateral</span>
+                    )}
                     <span className="text-xs px-2 py-1 rounded-full bg-emerald-700">e1RM {headerSummary.e1rm}</span>
                     <span className="text-xs px-2 py-1 rounded-full bg-sky-700">Top {headerSummary.topLoad} kg</span>
                 </div>

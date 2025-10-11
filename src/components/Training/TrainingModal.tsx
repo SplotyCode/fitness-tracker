@@ -1,14 +1,13 @@
 import {JSX, useEffect, useMemo, useState} from "react";
-import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain/training";
+import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain";
 import { useTrainingModal } from "../../hooks/useTrainingModal";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
-import {Timestamp} from "firebase/firestore";
 import {TrainingsRepository} from "../../repositories";
 
 interface Props {
     userId: string;
-    training?: { id: string; data: any } | null;
+    training: { id: string; data: any };
     onClose: () => void;
     repo: TrainingsRepository<Training>;
 }
@@ -16,27 +15,10 @@ interface Props {
 export default function TrainingModal({
                                           userId, training, onClose, repo,
                                       }: Props): JSX.Element | null {
-    const [createdTrainingId, setCreatedTrainingId] = useState<string | undefined>(undefined);
-    const ensuredTrainingId = training?.id ?? createdTrainingId;
+    const trainingId = training.id;
 
-    useEffect(() => {
-        if (training?.id) return;
-        if (createdTrainingId) return;
-
-        const createNow = async () => {
-            const id = repo.newTrainingId(userId);
-            const isoDay = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
-            await repo.saveTraining(userId, id, {
-                day: isoDay,
-                startedAt: Timestamp.now(),
-                endedAt: null,
-            } as Partial<Training>);
-            setCreatedTrainingId(id);
-        };
-        void createNow();
-    }, [training?.id, createdTrainingId, repo, userId]);
     const { sets, end, remove, addBilateral, addUnilateral, updateSet, deleteSet, progressFor } =
-        useTrainingModal(repo, userId, ensuredTrainingId);
+        useTrainingModal(repo, userId, trainingId);
 
     const [openExerciseId, setOpenExerciseId] = useState<ExerciseId | null>(null);
     const [addedExerciseIds, setAddedExerciseIds] = useState<ExerciseId[]>([]);

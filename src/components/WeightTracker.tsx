@@ -2,6 +2,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {FaSpinner} from "react-icons/fa";
+import { Timestamp } from "firebase/firestore";
 
 import { DayUpdateData, NutritionGoals, WeekData } from "../domain";
 import WeightChart from "./WeightChart";
@@ -50,6 +51,7 @@ const WeightTracker: React.FC = () => {
     }, { onPendingWrites: registerPendingWrites });
 
     const unsubscribeTrainings = subscribeTrainings<Training>(user.uid, trainingsRepo, (arr) => {
+      console.log("Trainings updated", arr);
       const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
       trainingsRef.current = sorted;
       setTrainingsVersion(v => v + 1);
@@ -85,12 +87,24 @@ const WeightTracker: React.FC = () => {
   [user]
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
-  const [showTrainingModal, setShowTrainingModal] = useState(false);
   const [editingTraining, setEditingTraining] = useState<{ id: string; data: Training } | null>(null);
 
-  const handleOpenNewTraining = (): void => {
-    setEditingTraining(null);
-    setShowTrainingModal(true);
+  const handleOpenNewTraining = async (): Promise<void> => {
+    if (!user) return;
+    const repo = new FirestoreTrainingsRepository<Training>();
+    const id = repo.newTrainingId(user.uid);
+    const isoDay = new Date().toISOString().split("T")[0];
+    const data = {
+      day: isoDay,
+      startedAt: Timestamp.now(),
+      endedAt: Timestamp.now(),
+    } as Training;
+    try {
+      await repo.saveTraining(user.uid, id, data);
+      setEditingTraining({ id, data });
+    } catch (e) {
+      console.error("Failed to create training", e);
+    }
   };
 
   const trainingsByDay = React.useMemo(() => {
@@ -101,7 +115,6 @@ const WeightTracker: React.FC = () => {
     const found = trainingsRef.current.find(t => t.id === trainingId) || null;
     if (found) {
       setEditingTraining(found);
-      setShowTrainingModal(true);
     }
   };
 
@@ -147,12 +160,11 @@ const WeightTracker: React.FC = () => {
         goals={nutritionGoals}
         onChange={handleSaveNutritionGoals}
       />
-        {showTrainingModal && (
+        {editingTraining && (
             <TrainingModal
-                open={showTrainingModal}
                 userId={user.uid}
                 training={editingTraining}
-                onClose={() => setShowTrainingModal(false)}
+                onClose={() => setEditingTraining(null)}
                 repo={new FirestoreTrainingsRepository<Training>()}
             />
         )}

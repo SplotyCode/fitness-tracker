@@ -1,5 +1,5 @@
-import { JSX, useState } from "react";
-import { Exercise, ExerciseId } from "../../domain";
+import {JSX, useState} from "react";
+import {Exercise, ExerciseId} from "../../domain";
 
 export default function QuickInputs({
                                         exercise,
@@ -19,15 +19,15 @@ export default function QuickInputs({
     const step = (v: number, d: number) => Math.max(0, Number((v + d).toFixed(1)));
 
     const handleSave = async () => {
-        if (exercise.id) {
+        if (exercise.isUnilateral) {
             await onAddSet({
                 mode: "unilateral",
                 exerciseId: exercise.id as ExerciseId,
                 weightLeftKg: weightL, weightRightKg: weightR,
                 repsLeft: repsL, repsRight: repsR,
             });
-            const prevLw = weightL, prevRw = weightR, prevLr = repsL, prevRr = repsR;
-            setWeightL(prevRw); setWeightR(prevLw);
+            const prevLw = weightL, prevLr = repsL, prevRr = repsR;
+            setWeightL(weightR); setWeightR(prevLw);
             setRepsL(prevRr); setRepsR(prevLr);
         } else {
             await onAddSet({

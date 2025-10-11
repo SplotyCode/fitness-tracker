@@ -21,7 +21,7 @@ export default function useSyncStatus(): {
       window.removeEventListener('offline', handleOffline);
     };
   }, []);
-  console.log(pendingWrites)
+  console.log("Pending writes", pendingWrites)
 
   const registerPendingWrites = useCallback((key: string, hasPending: boolean) => {
     setPendingWrites(prev => ({ ...prev, [key]: hasPending }));
