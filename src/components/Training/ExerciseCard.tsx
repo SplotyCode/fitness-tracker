@@ -1,5 +1,5 @@
 import { JSX, useMemo, useState } from "react";
-import { Exercise, ExerciseId, TrainingSet } from "../../domain";
+import { Exercise, ExerciseId, TrainingSet } from "../../domain/training";
 import QuickInputs from "./QuickInputs";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
@@ -16,10 +16,15 @@ interface Props {
     onUpdateSet: (setId: string, data: Partial<TrainingSet>) => Promise<void>;
     onDeleteSet: (setId: string) => Promise<void>;
     loadProgress: () => Promise<any>;
+    loadLastDefaults: () => Promise<
+        | { mode: "bilateral"; weightKg: number; reps: number }
+        | { mode: "unilateral"; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number }
+        | null
+    >;
 }
 
 export default function ExerciseCard({
-                                         exercise, isOpen, onToggle, setsToday, onAddSet, onUpdateSet, onDeleteSet, loadProgress
+                                         exercise, isOpen, onToggle, setsToday, onAddSet, onUpdateSet, onDeleteSet, loadProgress, loadLastDefaults
                                      }: Props): JSX.Element {
     const [showProgress, setShowProgress] = useState(false);
 
@@ -40,7 +45,7 @@ export default function ExerciseCard({
     }, [setsToday]);
 
     return (
-        <article className="rounded-2xl border border-white/10">
+        <article className="rounded-2xl border border-white/10 overflow-hidden">
             <header className="p-4 flex items-center justify-between bg-white/5 cursor-pointer" onClick={onToggle}>
                 <div className="flex items-center gap-3">
                     <h4 className="text-lg font-semibold">{exercise.name}</h4>
@@ -59,7 +64,7 @@ export default function ExerciseCard({
 
             {isOpen && (
                 <div className="p-4 flex flex-col gap-4">
-                    <QuickInputs exercise={exercise} onAddSet={onAddSet} />
+                    <QuickInputs exercise={exercise} onAddSet={onAddSet} loadLastDefaults={loadLastDefaults}/>
                     <SetsTable setsToday={setsToday} onUpdateSet={onUpdateSet} onDeleteSet={onDeleteSet} unilateral={exercise.isUnilateral} />
                     {showProgress && (
                         <ProgressPanel loadProgress={loadProgress} />

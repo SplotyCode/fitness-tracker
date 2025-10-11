@@ -35,5 +35,3 @@ export interface NutritionGoals {
   proteinLevels: Level[];
   fatLevels: Level[];
 }
-
-export * from "./training";

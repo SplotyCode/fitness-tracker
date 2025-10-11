@@ -1,8 +1,8 @@
 import {JSX, useState} from "react";
 import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
 
-import { DayUpdateData, NutritionGoals, WeekData } from "../../domain";
-import {Training} from "../../domain";
+import { DayUpdateData, NutritionGoals, WeekData } from "../../domain/nutrition";
+import {Training} from "../../domain/training";
 import DayCard from "./DayCard";
 import { calculateAverageForWeek } from "../../usecases/weekly_calculations";
 

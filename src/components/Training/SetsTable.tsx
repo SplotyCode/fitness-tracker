@@ -1,5 +1,5 @@
 import { JSX, useState } from "react";
-import { TrainingSet } from "../../domain";
+import { TrainingSet } from "../../domain/training";
 
 export default function SetsTable({
                                       setsToday, unilateral, onUpdateSet, onDeleteSet

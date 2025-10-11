@@ -1,8 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 import {
     ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
-} from "../domain";
-import { TrainingsRepository } from "../repositories";
+} from "../domain/training";
+import {addSet, deleteTraining, saveTraining, subscribeTrainingSets} from "../repositories/trainings";
 
 export interface ProgressCell {
     weight: number | null;
@@ -19,7 +19,6 @@ export interface ProgressMatrix {
 }
 
 export async function addBilateralSet(
-    repo: TrainingsRepository<Training>,
     params: {
         userId: string;
         trainingId: string;
@@ -37,7 +36,7 @@ export async function addBilateralSet(
 
     let currentSets: { id: string; data: TrainingSet }[] = [];
     await new Promise<void>((resolve, reject) => {
-        const unsub = repo.subscribeTrainingSets(
+        const unsub = subscribeTrainingSets(
             userId, trainingId,
             (arr) => { currentSets = arr; unsub(); resolve(); },
             reject
@@ -53,11 +52,10 @@ export async function addBilateralSet(
         pauseSec: restSec,
         setIndex, performedAt,
     };
-    return repo.addSet(userId, trainingId, data);
+    return addSet(userId, trainingId, data);
 }
 
 export async function addUnilateralSet(
-    repo: TrainingsRepository<Training>,
     params: {
         userId: string;
         trainingId: string;
@@ -75,7 +73,7 @@ export async function addUnilateralSet(
 
     let currentSets: { id: string; data: TrainingSet }[] = [];
     await new Promise<void>((resolve, reject) => {
-        const unsub = repo.subscribeTrainingSets(
+        const unsub = subscribeTrainingSets(
             userId, trainingId,
             (arr) => { currentSets = arr; unsub(); resolve(); },
             reject
@@ -90,46 +88,37 @@ export async function addUnilateralSet(
         rpe, pauseSec: restSec,
         setIndex, performedAt,
     };
-    return repo.addSet(userId, trainingId, data);
+    return addSet(userId, trainingId, data);
 }
 
 export async function endSession(
-    repo: TrainingsRepository<Training>,
     { userId, trainingId }: { userId: string; trainingId: string }
 ) {
-    await repo.saveTraining(userId, trainingId, { endedAt: Timestamp.now() } as Partial<Training>);
+    await saveTraining(userId, trainingId, { endedAt: Timestamp.now() } as Partial<Training>);
 }
 
 export async function deleteSession(
-    repo: TrainingsRepository<Training>,
     { userId, trainingId }: { userId: string; trainingId: string }
 ) {
-    await repo.deleteTraining(userId, trainingId);
+    await deleteTraining(userId, trainingId);
 }
 
 export async function buildProgressMatrix(
-    repo: TrainingsRepository<Training>,
-    params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number }
+    params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number },
+    preloadedTrainings: { id: string; data: Training }[]
 ): Promise<ProgressMatrix> {
     const { userId, exerciseId, trainingsLimit } = params;
 
-    let allTrainings: { id: string; data: Training }[] = [];
-    await new Promise<void>((resolve, reject) => {
-        const unsub = repo.subscribeTrainings(
-            userId,
-            (arr) => { allTrainings = arr.sort((a,b) =>
-                ((b.data.startedAt as any).toMillis?.() ?? 0) - ((a.data.startedAt as any).toMillis?.() ?? 0)
-            ); unsub(); resolve(); },
-            reject
-        );
-    });
+    const allTrainings: { id: string; data: Training }[] = [...preloadedTrainings].sort((a,b) =>
+        ((b.data.startedAt as any).toMillis?.() ?? 0) - ((a.data.startedAt as any).toMillis?.() ?? 0)
+    );
     const picked = allTrainings.slice(0, trainingsLimit);
 
     const perTrainingSets: { trainingId: string; date: string; sets: TrainingSet[] }[] = [];
     for (const t of picked) {
         let sets: { id: string; data: TrainingSet }[] = [];
         await new Promise<void>((resolve, reject) => {
-            const unsub = repo.subscribeTrainingSets(
+            const unsub = subscribeTrainingSets(
                 userId, t.id,
                 (arr) => { sets = arr; unsub(); resolve(); },
                 reject
@@ -192,4 +181,67 @@ export async function buildProgressMatrix(
     }
 
     return { sessions, rows, cells };
+}
+
+
+export type LastDefaults =
+  | { mode: "bilateral"; weightKg: number; reps: number }
+  | { mode: "unilateral"; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number };
+
+export async function getLastExerciseDefaultsFromPreviousTraining(
+  params: { userId: string; currentTrainingId: string; exerciseId: ExerciseId },
+  preloadedTrainings: { id: string; data: Training }[]
+): Promise<LastDefaults | null> {
+  const { userId, currentTrainingId, exerciseId } = params;
+
+  let allTrainings: { id: string; data: Training }[]= [...preloadedTrainings].sort(
+    (a, b) => ((b.data.startedAt as any).toMillis?.() ?? 0) - ((a.data.startedAt as any).toMillis?.() ?? 0)
+  );
+
+  const idx = allTrainings.findIndex((t) => t.id === currentTrainingId);
+  // Start from the session just before current, then older ones
+  for (let i = idx >= 0 ? idx + 1 : 0; i < allTrainings.length; i++) {
+    const t = allTrainings[i];
+    let sets: { id: string; data: TrainingSet }[] = [];
+    await new Promise<void>((resolve, reject) => {
+      const unsub = subscribeTrainingSets(
+        userId,
+        t.id,
+        (arr) => {
+          sets = arr;
+          unsub();
+          resolve();
+        },
+        reject
+      );
+    });
+    const exSets = sets.map((s) => s.data).filter((s) => s.exerciseId === exerciseId);
+    if (exSets.length === 0) continue;
+
+    // Pick the last set by setIndex or performedAt ordering
+    exSets.sort((a: any, b: any) => {
+      const ai = (a as any).setIndex ?? 0;
+      const bi = (b as any).setIndex ?? 0;
+      if (ai !== bi) return ai - bi;
+      const at = (a as any).performedAt?.toMillis?.() ?? 0;
+      const bt = (b as any).performedAt?.toMillis?.() ?? 0;
+      return at - bt;
+    });
+    const last = exSets[exSets.length - 1];
+    if ((last as any).mode === "unilateral") {
+      const u = last as UnilateralSet;
+      return {
+        mode: "unilateral",
+        weightLeftKg: u.weightLeftKg,
+        weightRightKg: u.weightRightKg,
+        repsLeft: u.repsLeft,
+        repsRight: u.repsRight,
+      };
+    } else {
+      const b = last as BilateralSet;
+      return { mode: "bilateral", weightKg: b.weightKg, reps: b.reps };
+    }
+  }
+
+  return null;
 }

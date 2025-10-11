@@ -1,24 +1,23 @@
 import {JSX, useEffect, useMemo, useState} from "react";
-import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain";
+import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain/training";
 import { useTrainingModal } from "../../hooks/useTrainingModal";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
-import {TrainingsRepository} from "../../repositories";
 
 interface Props {
     userId: string;
     training: { id: string; data: any };
     onClose: () => void;
-    repo: TrainingsRepository<Training>;
+    trainings: { id: string; data: Training }[];
 }
 
 export default function TrainingModal({
-                                          userId, training, onClose, repo,
+                                          userId, training, onClose, trainings,
                                       }: Props): JSX.Element | null {
     const trainingId = training.id;
 
-    const { sets, end, remove, addBilateral, addUnilateral, updateSet, deleteSet, progressFor } =
-        useTrainingModal(repo, userId, trainingId);
+    const { sets, end, remove, addBilateral, addUnilateral, updateSet, deleteSet, progressFor, lastDefaultsFromPrev } =
+        useTrainingModal(userId, trainingId, trainings);
 
     const [openExerciseId, setOpenExerciseId] = useState<ExerciseId | null>(null);
     const [addedExerciseIds, setAddedExerciseIds] = useState<ExerciseId[]>([]);
@@ -107,6 +106,7 @@ export default function TrainingModal({
                                 onUpdateSet={(setId, data) => updateSet(setId, data)}
                                 onDeleteSet={(setId) => deleteSet(setId)}
                                 loadProgress={() => progressFor(ex.id, 5)}
+                                loadLastDefaults={() => lastDefaultsFromPrev(ex.id)}
                             />
                         );
                     })}

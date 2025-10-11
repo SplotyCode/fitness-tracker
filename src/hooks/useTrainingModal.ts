@@ -1,45 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
-import { TrainingsRepository } from "../repositories";
-import { Training, TrainingSet, ExerciseId } from "../domain";
-import { addBilateralSet, addUnilateralSet, endSession, deleteSession, buildProgressMatrix } from "../usecases/training_session";
+import {deleteSet, subscribeTrainingSets, updateSet} from "../repositories/trainings";
+import { Training, TrainingSet, ExerciseId } from "../domain/training";
+import { addBilateralSet, addUnilateralSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining } from "../usecases/training_session";
 
 export function useTrainingModal(
-    repo: TrainingsRepository<Training>,
     userId: string,
-    trainingId?: string
+    trainingId: string,
+    trainings: { id: string; data: Training }[]
 ) {
-    const [training, setTraining] = useState<{ id: string; data: Training } | null>(null);
     const [sets, setSets] = useState<{ id: string; data: TrainingSet }[]>([]);
     const [hasPendingWrites, setHasPendingWrites] = useState(false);
 
     useEffect(() => {
-        if (!userId || !trainingId) return;
-        const unsubT = repo.subscribeTrainings(userId, (arr, pending) => {
-            setHasPendingWrites(pending);
-            const t = arr.find(x => x.id === trainingId) ?? null;
-            setTraining(t);
-        });
-        const unsubS = repo.subscribeTrainingSets(userId, trainingId, (arr, pending) => {
+        const unsubS = subscribeTrainingSets(userId, trainingId, (arr, pending) => {
             setHasPendingWrites(pending);
             setSets(arr);
         });
-        return () => { unsubT(); unsubS(); };
+        return () => { unsubS(); };
     }, [userId, trainingId]);
 
     const actions = useMemo(() => ({
         addBilateral: (p: { exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }) =>
-            addBilateralSet(repo, { userId, trainingId: trainingId!, ...p }),
+            addBilateralSet({ userId, trainingId: trainingId, ...p }),
         addUnilateral: (p: { exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }) =>
-            addUnilateralSet(repo, { userId, trainingId: trainingId!, ...p }),
+            addUnilateralSet({ userId, trainingId: trainingId, ...p }),
         updateSet: (setId: string, data: Partial<TrainingSet>) =>
-            repo.updateSet(userId, trainingId!, setId, data),
-        deleteSet: (setId: string) =>
-            repo.deleteSet(userId, trainingId!, setId),
-        end: () => endSession(repo, { userId, trainingId: trainingId! }),
-        remove: () => deleteSession(repo, { userId, trainingId: trainingId! }),
+            updateSet(userId, trainingId, setId, data),
+        deleteSet: (setId: string) => deleteSet(userId, trainingId, setId),
+        end: () => endSession({ userId, trainingId: trainingId }),
+        remove: () => deleteSession({ userId, trainingId: trainingId }),
         progressFor: (exerciseId: ExerciseId, trainingsLimit = 5) =>
-            buildProgressMatrix(repo, { userId, exerciseId, trainingsLimit }),
-    }), [userId, trainingId]);
+            buildProgressMatrix({ userId, exerciseId, trainingsLimit }, trainings),
+        lastDefaultsFromPrev: (exerciseId: ExerciseId) =>
+            getLastExerciseDefaultsFromPreviousTraining({ userId, currentTrainingId: trainingId, exerciseId }, trainings),
+    }), [userId, trainingId, trainings]);
 
-    return { training, sets, hasPendingWrites, ...actions };
+    return { sets, hasPendingWrites, ...actions };
 }

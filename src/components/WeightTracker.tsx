@@ -1,10 +1,10 @@
 "use client";
 
-import React, {useCallback, useEffect, useRef, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {FaSpinner} from "react-icons/fa";
 import { Timestamp } from "firebase/firestore";
 
-import { DayUpdateData, NutritionGoals, WeekData } from "../domain";
+import { DayUpdateData, NutritionGoals, WeekData } from "../domain/nutrition";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import GoalsModal from "./GoalsModal";
@@ -13,16 +13,17 @@ import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
 import TrainingModal from "./Training/TrainingModal";
-import {Training} from "../domain";
-import { FirestoreDaysRepository, FirestoreProfileRepository, FirestoreTrainingsRepository } from "../repositories/firestore";
-import { subscribeWeeklyData, saveDayData as ucSaveDayData, subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals, subscribeTrainings, groupTrainingsByDay } from "../usecases";
+import {Training} from "../domain/training";
+import { subscribeWeeklyData, saveDayData as ucSaveDayData } from "../usecases/weekly_data";
+import { subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals } from "../usecases/profile_subscriptions";
+import { subscribeTrainings, groupTrainingsByDay } from "../usecases/trainings_feed";
+import {newTrainingId, saveTraining} from "../repositories/trainings";
 
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
+  const [trainings, setTrainings] = useState<{ id: string; data: Training }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const trainingsRef = useRef<{ id: string; data: Training }[]>([]);
-  const [trainingsVersion, setTrainingsVersion] = useState(0);
 
   const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
   const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
@@ -37,24 +38,19 @@ const WeightTracker: React.FC = () => {
     setIsLoading(true);
     clearPendingWrites();
 
-    const daysRepo = new FirestoreDaysRepository();
-    const profileRepo = new FirestoreProfileRepository();
-    const trainingsRepo = new FirestoreTrainingsRepository<Training>();
-
-    const unsubscribeDays = subscribeWeeklyData(user.uid, daysRepo, (weeks) => {
+    const unsubscribeDays = subscribeWeeklyData(user.uid, (weeks) => {
       setWeeklyData(weeks);
       setIsLoading(false);
     }, { onPendingWrites: registerPendingWrites });
 
-    const unsubscribeGoals = subscribeNutritionGoalsOrInit(user.uid, profileRepo, (goals) => {
+    const unsubscribeGoals = subscribeNutritionGoalsOrInit(user.uid, (goals) => {
       setNutritionGoals(goals);
     }, { onPendingWrites: registerPendingWrites });
 
-    const unsubscribeTrainings = subscribeTrainings<Training>(user.uid, trainingsRepo, (arr) => {
+    const unsubscribeTrainings = subscribeTrainings(user.uid, (arr) => {
       console.log("Trainings updated", arr);
       const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
-      trainingsRef.current = sorted;
-      setTrainingsVersion(v => v + 1);
+      setTrainings(sorted);
     }, { onPendingWrites: registerPendingWrites });
 
     return () => {
@@ -70,7 +66,7 @@ const WeightTracker: React.FC = () => {
       return;
     }
     try {
-      await ucSaveDayData(user.uid, new FirestoreDaysRepository(), date, updatedDay);
+      await ucSaveDayData(user.uid, date, updatedDay);
     } catch (error) {
       console.error("Error saving data:", error);
     }
@@ -79,7 +75,7 @@ const WeightTracker: React.FC = () => {
   const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
     if (!user) return;
     try {
-      await ucSaveNutritionGoals(user.uid, new FirestoreProfileRepository(), newGoals);
+      await ucSaveNutritionGoals(user.uid, newGoals);
     } catch (err) {
       console.error("Error saving nutrition goals:", err);
     }
@@ -91,8 +87,7 @@ const WeightTracker: React.FC = () => {
 
   const handleOpenNewTraining = async (): Promise<void> => {
     if (!user) return;
-    const repo = new FirestoreTrainingsRepository<Training>();
-    const id = repo.newTrainingId(user.uid);
+    const id = newTrainingId(user.uid);
     const isoDay = new Date().toISOString().split("T")[0];
     const data = {
       day: isoDay,
@@ -100,7 +95,9 @@ const WeightTracker: React.FC = () => {
       endedAt: Timestamp.now(),
     } as Training;
     try {
-      await repo.saveTraining(user.uid, id, data);
+        console.log("Creating training", id, data);
+      await saveTraining(user.uid, id, data);
+      console.log("Training created", id, data);
       setEditingTraining({ id, data });
     } catch (e) {
       console.error("Failed to create training", e);
@@ -108,11 +105,11 @@ const WeightTracker: React.FC = () => {
   };
 
   const trainingsByDay = React.useMemo(() => {
-    return groupTrainingsByDay(trainingsRef.current);
-  }, [trainingsVersion]);
+    return groupTrainingsByDay(trainings);
+  }, [trainings]);
 
   const handleOpenTrainingById = (trainingId: string): void => {
-    const found = trainingsRef.current.find(t => t.id === trainingId) || null;
+    const found = trainings.find(t => t.id === trainingId) || null;
     if (found) {
       setEditingTraining(found);
     }
@@ -165,7 +162,7 @@ const WeightTracker: React.FC = () => {
                 userId={user.uid}
                 training={editingTraining}
                 onClose={() => setEditingTraining(null)}
-                repo={new FirestoreTrainingsRepository<Training>()}
+                trainings={trainings}
             />
         )}
     </main>

@@ -1,20 +1,51 @@
-import {JSX, useState} from "react";
-import {Exercise, ExerciseId} from "../../domain";
+import {JSX, useEffect, useRef, useState} from "react";
+import {Exercise, ExerciseId} from "../../domain/training";
 
 export default function QuickInputs({
                                         exercise,
                                         onAddSet,
+                                        loadLastDefaults,
                                     }: {
     exercise: Exercise;
     onAddSet: (payload:
                    | { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }
                    | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
     ) => Promise<void>;
+    loadLastDefaults: () => Promise<
+        | { mode: "bilateral"; weightKg: number; reps: number }
+        | { mode: "unilateral"; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number }
+        | null
+    >;
 }): JSX.Element {
     const [weightL, setWeightL] = useState(20);
     const [weightR, setWeightR] = useState(20);
     const [repsL, setRepsL] = useState(8);
     const [repsR, setRepsR] = useState(8);
+
+    const pristineRef = useRef(true);
+    useEffect(() => {
+        if (!pristineRef.current) return;
+        let active = true;
+        (async () => {
+            try {
+                const d = await loadLastDefaults();
+                if (!active || !d) return;
+                if (d.mode === "unilateral") {
+                    setWeightL(d.weightLeftKg);
+                    setWeightR(d.weightRightKg);
+                    setRepsL(d.repsLeft);
+                    setRepsR(d.repsRight);
+                } else {
+                    setWeightL(d.weightKg);
+                    setRepsL(d.reps);
+                }
+                pristineRef.current = false;
+            } catch (e) {
+                console.error("Failed to load last defaults", e);
+            }
+        })();
+        return () => { active = false; };
+    }, [exercise.id, loadLastDefaults]);
 
     const step = (v: number, d: number) => Math.max(0, Number((v + d).toFixed(1)));
 

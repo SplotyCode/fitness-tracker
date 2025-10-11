@@ -8,7 +8,7 @@ import {
   ResponsiveContainer,
   Dot,
 } from "recharts";
-import { WeekData } from "../domain";
+import { WeekData } from "../domain/nutrition";
 import { calculateAverageForWeek } from "../usecases/weekly_calculations";
 import {Payload} from "recharts/types/component/DefaultTooltipContent";
 
