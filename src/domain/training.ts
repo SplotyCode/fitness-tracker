@@ -10,13 +10,15 @@ export interface Exercise {
   isUnilateral: boolean;
 }
 
-export const EXERCISES: Exercise[] = [
-    { id: "chest_press", name: "Chest Press", equipment: "machine", restSec: 90, isUnilateral: false },
-    { id: "triceps_press", name: "Triceps Press", equipment: "machine", restSec: 90, isUnilateral: false },
+export const EXERCISES: readonly Exercise[] = [
+  { id: "chest_press", name: "Chest Press", equipment: "machine", restSec: 90, isUnilateral: false },
+  { id: "triceps_press", name: "Triceps Press", equipment: "machine", restSec: 90, isUnilateral: false },
 ] as const;
 
 export type ExerciseId = (typeof EXERCISES)[number]["id"];
-export const getExercise = (id: ExerciseId) => EXERCISES.find(e => e.id === id)!;
+const EXERCISE_BY_ID: Record<ExerciseId, (typeof EXERCISES)[number]> =
+    Object.fromEntries(EXERCISES.map(e => [e.id, e])) as Record<ExerciseId, (typeof EXERCISES)[number]>;
+export const getExercise = (id: ExerciseId): Exercise => EXERCISE_BY_ID[id];
 
 export interface Training {
   day: string; // ISO date (YYYY-MM-DD)

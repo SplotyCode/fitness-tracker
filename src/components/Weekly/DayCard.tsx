@@ -14,7 +14,7 @@ interface DayCardProps {
   day: DayData;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   nutritionGoals: NutritionGoals;
-  trainings?: { id: string; data: Training }[];
+  trainings: { id: string; data: Training }[];
   onOpenTrainingById?: (trainingId: string) => void;
 }
 
@@ -43,7 +43,7 @@ const DayCard = ({
 
   const dailyLevel = getDayColor(day, nutritionGoals);
 
-  const hasTrainings = (trainings?.length ?? 0) > 0;
+  const hasTrainings = trainings.length > 0;
 
   if (isEditing) {
     return (

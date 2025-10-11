@@ -92,10 +92,10 @@ const WeightTracker: React.FC = () => {
     const data = {
       day: isoDay,
       startedAt: Timestamp.now(),
-      endedAt: Timestamp.now(),
+      endedAt: null,
     } as Training;
     try {
-        console.log("Creating training", id, data);
+      console.log("Creating training", id, data);
       await saveTraining(user.uid, id, data);
       console.log("Training created", id, data);
       setEditingTraining({ id, data });
@@ -109,7 +109,7 @@ const WeightTracker: React.FC = () => {
   }, [trainings]);
 
   const handleOpenTrainingById = (trainingId: string): void => {
-    const found = trainings.find(t => t.id === trainingId) || null;
+    const found = trainings.find(t => t.id === trainingId);
     if (found) {
       setEditingTraining(found);
     }
@@ -157,14 +157,14 @@ const WeightTracker: React.FC = () => {
         goals={nutritionGoals}
         onChange={handleSaveNutritionGoals}
       />
-        {editingTraining && (
-            <TrainingModal
-                userId={user.uid}
-                training={editingTraining}
-                onClose={() => setEditingTraining(null)}
-                trainings={trainings}
-            />
-        )}
+      {editingTraining && (
+        <TrainingModal
+          userId={user.uid}
+          training={editingTraining}
+          onClose={() => setEditingTraining(null)}
+          trainings={trainings}
+        />
+      )}
     </main>
   );
 };

@@ -7,12 +7,12 @@ import { getDefaultNutritionGoal } from "./nutrition";
 export const subscribeNutritionGoalsOrInit = (
   userId: string,
   onGoals: (goals: NutritionGoals[]) => void,
-  options?: SubscribeOptions
+  options: SubscribeOptions
 ): Unsubscribe => {
   return subscribeNutritionGoals(
     userId,
     async (goals: NutritionGoals[] | null, hasPendingWrites: boolean) => {
-      options?.onPendingWrites?.("profile", hasPendingWrites);
+      options.onPendingWrites("profile", hasPendingWrites);
       if (goals && goals.length > 0) {
         onGoals(goals);
       } else {

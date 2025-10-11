@@ -6,12 +6,12 @@ import {Training} from "../domain/training";
 export const subscribeTrainings = (
   userId: string,
   onTrainings: (arr: { id: string; data: Training }[]) => void,
-  options?: SubscribeOptions
+  options: SubscribeOptions
 ): Unsubscribe => {
   return subscribe(
     userId,
     (arr, hasPendingWrites) => {
-      options?.onPendingWrites?.("trainings", hasPendingWrites);
+      options.onPendingWrites("trainings", hasPendingWrites);
       onTrainings(arr);
     }
   );
@@ -25,7 +25,9 @@ export const groupTrainingsByDay = (
   const byDay: TrainingsByDayDto = {};
   for (const t of trainings) {
     const key = t.data.day;
-    if (!byDay[key]) byDay[key] = [];
+    if (!(key in byDay)) {
+      byDay[key] = [];
+    }
     byDay[key].push(t);
   }
   return byDay;

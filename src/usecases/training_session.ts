@@ -1,8 +1,16 @@
 import { Timestamp } from "firebase/firestore";
 import {
-    ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
+  ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
 } from "../domain/training";
 import {addSet, deleteTraining, saveTraining, subscribeTrainingSets} from "../repositories/trainings";
+
+export type AddSetPayload = {
+  userId: string;
+  trainingId: string;
+} & (
+  { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number; performedAt?: Timestamp } |
+  { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number; performedAt?: Timestamp }
+);
 
 export interface ProgressCell {
     weight: number | null;
@@ -18,169 +26,137 @@ export interface ProgressMatrix {
     cells: (ProgressCell | null)[][]; // [row][col]
 }
 
-export async function addBilateralSet(
-    params: {
-        userId: string;
-        trainingId: string;
-        exerciseId: ExerciseId;
-        weightKg: number;
-        reps: number;
-        rpe?: number;
-        performedAt?: Timestamp;
-    }
-) {
-    const {
-        userId, trainingId, exerciseId, weightKg, reps, rpe = 0,
-        performedAt = Timestamp.now(),
-    } = params;
+export async function addTrainingSet(params: AddSetPayload): Promise<{ id: string; data: TrainingSet }> {
+  const {
+    userId, trainingId, exerciseId,
+  } = params;
 
-    let currentSets: { id: string; data: TrainingSet }[] = [];
-    await new Promise<void>((resolve, reject) => {
-        const unsub = subscribeTrainingSets(
-            userId, trainingId,
-            (arr) => { currentSets = arr; unsub(); resolve(); },
-            reject
-        );
-    });
-    const setIndex = currentSets.filter(s => s.data.exerciseId === exerciseId).length;
+  let currentSets: { id: string; data: TrainingSet }[] = [];
+  await new Promise<void>((resolve, reject) => {
+    const unsub = subscribeTrainingSets(
+      userId, trainingId,
+      (arr) => { currentSets = arr; unsub(); resolve(); },
+      reject
+    );
+  });
+  const setIndex = currentSets.filter(s => s.data.exerciseId === exerciseId).length;
 
-    const restSec = 30;
+  const performedAt: Timestamp = (params).performedAt ?? Timestamp.now();
+  const rpe: number = (params).rpe ?? 0;
+  const restSec = 30;
+
+  if (params.mode === "bilateral") {
+    const { weightKg, reps } = params;
     const data: BilateralSet = {
-        trainingId, exerciseId, mode: "bilateral",
-        weightKg, reps,
-        rpe,
-        pauseSec: restSec,
-        setIndex, performedAt,
+      trainingId, exerciseId, mode: "bilateral",
+      weightKg, reps,
+      rpe,
+      pauseSec: restSec,
+      setIndex, performedAt,
     };
     return addSet(userId, trainingId, data);
-}
-
-export async function addUnilateralSet(
-    params: {
-        userId: string;
-        trainingId: string;
-        exerciseId: ExerciseId;
-        weightLeftKg: number; weightRightKg: number;
-        repsLeft: number; repsRight: number;
-        rpe?: number; performedAt?: Timestamp;
-    }
-) {
-    const {
-        userId, trainingId, exerciseId,
-        weightLeftKg, weightRightKg, repsLeft, repsRight,
-        rpe = 0, performedAt = Timestamp.now(),
-    } = params;
-
-    let currentSets: { id: string; data: TrainingSet }[] = [];
-    await new Promise<void>((resolve, reject) => {
-        const unsub = subscribeTrainingSets(
-            userId, trainingId,
-            (arr) => { currentSets = arr; unsub(); resolve(); },
-            reject
-        );
-    });
-    const setIndex = currentSets.filter(s => s.data.exerciseId === exerciseId).length;
-
-    const restSec = 30;
+  } else {
+    const { weightLeftKg, weightRightKg, repsLeft, repsRight } = params;
     const data: UnilateralSet = {
-        trainingId, exerciseId, mode: "unilateral",
-        weightLeftKg, weightRightKg, repsLeft, repsRight,
-        rpe, pauseSec: restSec,
-        setIndex, performedAt,
+      trainingId, exerciseId, mode: "unilateral",
+      weightLeftKg, weightRightKg, repsLeft, repsRight,
+      rpe, pauseSec: restSec,
+      setIndex, performedAt,
     };
     return addSet(userId, trainingId, data);
+  }
 }
 
 export async function endSession(
-    { userId, trainingId }: { userId: string; trainingId: string }
-) {
-    await saveTraining(userId, trainingId, { endedAt: Timestamp.now() } as Partial<Training>);
+  { userId, trainingId }: { userId: string; trainingId: string }
+): Promise<void> {
+  await saveTraining(userId, trainingId, { endedAt: Timestamp.now() } as Partial<Training>);
 }
 
 export async function deleteSession(
-    { userId, trainingId }: { userId: string; trainingId: string }
-) {
-    await deleteTraining(userId, trainingId);
+  { userId, trainingId }: { userId: string; trainingId: string }
+): Promise<void> {
+  await deleteTraining(userId, trainingId);
 }
 
 export async function buildProgressMatrix(
-    params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number },
-    preloadedTrainings: { id: string; data: Training }[]
+  params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number },
+  preloadedTrainings: { id: string; data: Training }[]
 ): Promise<ProgressMatrix> {
-    const { userId, exerciseId, trainingsLimit } = params;
+  const { userId, exerciseId, trainingsLimit } = params;
 
-    const allTrainings: { id: string; data: Training }[] = [...preloadedTrainings].sort((a,b) =>
-        ((b.data.startedAt as any).toMillis?.() ?? 0) - ((a.data.startedAt as any).toMillis?.() ?? 0)
-    );
-    const picked = allTrainings.slice(0, trainingsLimit);
+  const allTrainings: { id: string; data: Training }[] = [...preloadedTrainings].sort((a,b) =>
+    b.data.startedAt.toMillis() - a.data.startedAt.toMillis()
+  );
+  const picked = allTrainings.slice(0, trainingsLimit);
 
-    const perTrainingSets: { trainingId: string; date: string; sets: TrainingSet[] }[] = [];
-    for (const t of picked) {
-        let sets: { id: string; data: TrainingSet }[] = [];
-        await new Promise<void>((resolve, reject) => {
-            const unsub = subscribeTrainingSets(
-                userId, t.id,
-                (arr) => { sets = arr; unsub(); resolve(); },
-                reject
-            );
-        });
-        const exerciseSets = sets
-            .map(s => s.data)
-            .filter(s => s.exerciseId === exerciseId);
-        const dateIso = (t.data.startedAt as any)?.toDate?.().toISOString?.() ?? new Date().toISOString();
-        perTrainingSets.push({ trainingId: t.id, date: dateIso, sets: exerciseSets });
+  const perTrainingSets: { trainingId: string; date: string; sets: TrainingSet[] }[] = [];
+  for (const t of picked) {
+    let sets: { id: string; data: TrainingSet }[] = [];
+    await new Promise<void>((resolve, reject) => {
+      const unsub = subscribeTrainingSets(
+        userId, t.id,
+        (arr) => { sets = arr; unsub(); resolve(); },
+        reject
+      );
+    });
+    const exerciseSets = sets
+      .map(s => s.data)
+      .filter(s => s.exerciseId === exerciseId);
+    const dateIso = t.data.startedAt.toDate().toISOString()
+    perTrainingSets.push({ trainingId: t.id, date: dateIso, sets: exerciseSets });
+  }
+
+  const isUnilateral = getExercise(exerciseId).isUnilateral;
+  const maxSets = Math.max(1, ...perTrainingSets.map(x =>
+    x.sets.filter(s => s.exerciseId === exerciseId).length
+  ));
+
+  const rows: ProgressMatrix["rows"] = [];
+  for (let i = 0; i < maxSets; i++) {
+    if (isUnilateral) {
+      rows.push({ label: `Set ${i + 1} L`, setIndex: i, side: "L" });
+      rows.push({ label: `Set ${i + 1} R`, setIndex: i, side: "R" });
+    } else {
+      rows.push({ label: `Set ${i + 1}`, setIndex: i });
     }
+  }
 
-    const isUnilateral = getExercise(exerciseId).isUnilateral;
-    const maxSets = Math.max(1, ...perTrainingSets.map(x =>
-        x.sets.filter(s => s.exerciseId === exerciseId).length
-    ));
+  const sessions = perTrainingSets.map(t => ({ trainingId: t.trainingId, date: t.date }));
 
-    const rows: ProgressMatrix["rows"] = [];
-    for (let i = 0; i < maxSets; i++) {
-        if (isUnilateral) {
-            rows.push({ label: `Set ${i + 1} L`, setIndex: i, side: "L" });
-            rows.push({ label: `Set ${i + 1} R`, setIndex: i, side: "R" });
-        } else {
-            rows.push({ label: `Set ${i + 1}`, setIndex: i });
-        }
+  const cells: (ProgressCell | null)[][] = rows.map(() => Array.from({ length: sessions.length }, () => null as ProgressCell | null));
+
+  for (let col = 0; col < sessions.length; col++) {
+    const { sets } = perTrainingSets[col];
+    for (let r = 0; r < rows.length; r++) {
+      const row = rows[r];
+      const base = sets.find(s => s.setIndex === row.setIndex);
+      if (!base) { cells[r][col] = null; continue; }
+
+      if (isUnilateral && base.mode === "unilateral") {
+        const weight = row.side === "L" ? base.weightLeftKg : base.weightRightKg;
+        const reps   = row.side === "L" ? base.repsLeft     : base.repsRight;
+        cells[r][col] = { weight, reps, side: row.side };
+      } else if (!isUnilateral && base.mode === "bilateral") {
+        cells[r][col] = { weight: base.weightKg, reps: base.reps };
+      } else {
+        cells[r][col] = null;
+      }
     }
+  }
 
-    const sessions = perTrainingSets.map(t => ({ trainingId: t.trainingId, date: t.date }));
-
-    const cells: (ProgressCell | null)[][] = rows.map(() => Array(sessions.length).fill(null));
-
-    for (let col = 0; col < sessions.length; col++) {
-        const { sets } = perTrainingSets[col];
-        for (let r = 0; r < rows.length; r++) {
-            const row = rows[r];
-            const base = sets.find(s => s.setIndex === row.setIndex);
-            if (!base) { cells[r][col] = null; continue; }
-
-            if (isUnilateral && base.mode === "unilateral") {
-                const weight = row.side === "L" ? base.weightLeftKg : base.weightRightKg;
-                const reps   = row.side === "L" ? base.repsLeft     : base.repsRight;
-                cells[r][col] = { weight, reps, side: row.side };
-            } else if (!isUnilateral && base.mode === "bilateral") {
-                cells[r][col] = { weight: base.weightKg, reps: base.reps };
-            } else {
-                cells[r][col] = null;
-            }
-        }
+  for (let col = 0; col < sessions.length - 1; col++) {
+    for (let r = 0; r < rows.length; r++) {
+      const cur = cells[r][col];
+      const prev = cells[r][col + 1];
+      if (cur && prev && cur.weight != null && prev.weight != null && cur.reps != null && prev.reps != null) {
+        cur.deltaWeight = Number((cur.weight - prev.weight).toFixed(1));
+        cur.deltaReps = cur.reps - prev.reps;
+      }
     }
+  }
 
-    for (let col = 0; col < sessions.length - 1; col++) {
-        for (let r = 0; r < rows.length; r++) {
-            const cur = cells[r][col];
-            const prev = cells[r][col + 1];
-            if (cur && prev && cur.weight != null && prev.weight != null && cur.reps != null && prev.reps != null) {
-                cur.deltaWeight = Number((cur.weight - prev.weight).toFixed(1));
-                cur.deltaReps = cur.reps - prev.reps;
-            }
-        }
-    }
-
-    return { sessions, rows, cells };
+  return { sessions, rows, cells };
 }
 
 
@@ -194,8 +170,8 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
 ): Promise<LastDefaults | null> {
   const { userId, currentTrainingId, exerciseId } = params;
 
-  let allTrainings: { id: string; data: Training }[]= [...preloadedTrainings].sort(
-    (a, b) => ((b.data.startedAt as any).toMillis?.() ?? 0) - ((a.data.startedAt as any).toMillis?.() ?? 0)
+  const allTrainings: { id: string; data: Training }[]= [...preloadedTrainings].sort(
+    (a, b) => b.data.startedAt.toMillis() - a.data.startedAt.toMillis()
   );
 
   const idx = allTrainings.findIndex((t) => t.id === currentTrainingId);
@@ -218,18 +194,17 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
     const exSets = sets.map((s) => s.data).filter((s) => s.exerciseId === exerciseId);
     if (exSets.length === 0) continue;
 
-    // Pick the last set by setIndex or performedAt ordering
-    exSets.sort((a: any, b: any) => {
-      const ai = (a as any).setIndex ?? 0;
-      const bi = (b as any).setIndex ?? 0;
+    exSets.sort((a: TrainingSet, b: TrainingSet) => {
+      const ai = a.setIndex;
+      const bi = b.setIndex;
       if (ai !== bi) return ai - bi;
-      const at = (a as any).performedAt?.toMillis?.() ?? 0;
-      const bt = (b as any).performedAt?.toMillis?.() ?? 0;
+      const at = a.performedAt.toMillis();
+      const bt = b.performedAt.toMillis();
       return at - bt;
     });
     const last = exSets[exSets.length - 1];
-    if ((last as any).mode === "unilateral") {
-      const u = last as UnilateralSet;
+    if (last.mode === "unilateral") {
+      const u = last;
       return {
         mode: "unilateral",
         weightLeftKg: u.weightLeftKg,
@@ -238,7 +213,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
         repsRight: u.repsRight,
       };
     } else {
-      const b = last as BilateralSet;
+      const b = last;
       return { mode: "bilateral", weightKg: b.weightKg, reps: b.reps };
     }
   }
