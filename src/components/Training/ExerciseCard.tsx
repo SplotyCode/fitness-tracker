@@ -3,6 +3,7 @@ import { Exercise, TrainingSet } from "../../domain/training";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
 import { ProgressMatrix } from "../../usecases/training_session";
+import { FaChartLine } from "react-icons/fa";
 
 interface Props {
     exercise: Exercise;
@@ -54,8 +55,9 @@ const ExerciseCard: React.FC<Props> = ({
         </div>
         <button
           className="text-sm px-3 py-1 rounded-xl bg-neutral-700 hover:bg-neutral-600"
+          title="Toggle progress"
           onClick={(e) => { e.stopPropagation(); setShowProgress(s => !s); }}>
-          {showProgress ? "Hide progress" : "Show progress"}
+          <FaChartLine />
         </button>
       </header>
 
