@@ -16,7 +16,7 @@ const app = initializeApp(firebaseConfig);
 export const auth = initializeAuth(app, { persistence: indexedDBLocalPersistence });
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
-    tabManager: persistentMultipleTabManager()
+    tabManager: persistentMultipleTabManager(),
+    cacheSizeBytes: CACHE_SIZE_UNLIMITED,
   }),
-  cacheSizeBytes: CACHE_SIZE_UNLIMITED
 });
