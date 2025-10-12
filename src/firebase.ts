@@ -1,5 +1,5 @@
 import { initializeApp, FirebaseOptions } from "firebase/app";
-import { initializeAuth, indexedDBLocalPersistence } from "firebase/auth";
+import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver } from "firebase/auth";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -13,7 +13,10 @@ const firebaseConfig = {
 } satisfies FirebaseOptions;
 
 const app = initializeApp(firebaseConfig);
-export const auth = initializeAuth(app, { persistence: indexedDBLocalPersistence });
+export const auth = initializeAuth(app, {
+    persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+    popupRedirectResolver: browserPopupRedirectResolver,
+});
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
     tabManager: persistentMultipleTabManager(),
