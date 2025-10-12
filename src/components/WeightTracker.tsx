@@ -32,6 +32,7 @@ const WeightTracker: React.FC = () => {
     if (!user) {
       setWeeklyData([]);
       setNutritionGoals([]);
+      setTrainings([]);
       return;
     }
 
