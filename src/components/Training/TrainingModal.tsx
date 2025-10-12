@@ -1,7 +1,7 @@
 import {JSX, useEffect, useMemo, useState} from "react";
 import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain/training";
 import { subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDeleteSet } from "../../repositories/trainings";
-import { addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining } from "../../usecases/training_session";
+import { addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining } from "../../usecases/training/training_session";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
 import { FaFlagCheckered, FaTrashAlt } from "react-icons/fa";

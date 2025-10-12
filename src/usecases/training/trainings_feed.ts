@@ -1,7 +1,7 @@
-import type { SubscribeOptions } from "./types";
-import type { Unsubscribe } from "../repositories/types";
-import {subscribeTrainings as subscribe} from "../repositories/trainings";
-import {Training} from "../domain/training";
+import type { SubscribeOptions } from "../types";
+import type { Unsubscribe } from "../../repositories/types";
+import {subscribeTrainings as subscribe} from "../../repositories/trainings";
+import {Training} from "../../domain/training";
 
 export const subscribeTrainings = (
   userId: string,

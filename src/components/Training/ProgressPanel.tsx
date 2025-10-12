@@ -1,5 +1,5 @@
 import { JSX, useEffect, useState } from "react";
-import { ProgressMatrix } from "../../usecases/training_session";
+import { ProgressMatrix } from "../../usecases/training/training_session";
 
 const ProgressPanel = ({ loadProgress }: { loadProgress: () => Promise<ProgressMatrix> }): JSX.Element => {
   const [mx, setMx] = useState<ProgressMatrix | null>(null);

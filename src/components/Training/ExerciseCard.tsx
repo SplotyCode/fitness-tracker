@@ -2,7 +2,8 @@ import { JSX, useMemo, useState } from "react";
 import { Exercise, TrainingSet } from "../../domain/training";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
-import { ProgressMatrix } from "../../usecases/training_session";
+import { ProgressMatrix } from "../../usecases/training/training_session";
+import { calculateHeaderSummary } from "../../usecases/training/header_summary";
 import { FaChartLine } from "react-icons/fa";
 
 interface Props {
@@ -27,19 +28,7 @@ const ExerciseCard: React.FC<Props> = ({
   const [showProgress, setShowProgress] = useState(false);
 
   const headerSummary = useMemo(() => {
-    let topLoad = 0, e1rm = 0;
-    for (const s of setsToday) {
-      if (s.data.mode === "bilateral") {
-        topLoad = Math.max(topLoad, s.data.weightKg);
-        e1rm = Math.max(e1rm, s.data.weightKg * (1 + s.data.reps / 30));
-      } else {
-        const avgW = (s.data.weightLeftKg + s.data.weightRightKg) / 2;
-        const avgR = (s.data.repsLeft + s.data.repsRight) / 2;
-        topLoad = Math.max(topLoad, avgW);
-        e1rm = Math.max(e1rm, avgW * (1 + Math.round(avgR) / 30));
-      }
-    }
-    return { topLoad, e1rm: Math.round(e1rm) };
+    return calculateHeaderSummary(setsToday.map(s => s.data));
   }, [setsToday]);
 
   return (

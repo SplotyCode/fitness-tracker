@@ -16,7 +16,7 @@ import TrainingModal from "./Training/TrainingModal";
 import {Training} from "../domain/training";
 import { subscribeWeeklyData, saveDayData as ucSaveDayData } from "../usecases/weekly_data";
 import { subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals } from "../usecases/profile_subscriptions";
-import { subscribeTrainings, groupTrainingsByDay } from "../usecases/trainings_feed";
+import { subscribeTrainings, groupTrainingsByDay } from "../usecases/training/trainings_feed";
 import {newTrainingId, saveTraining} from "../repositories/trainings";
 
 const WeightTracker: React.FC = () => {

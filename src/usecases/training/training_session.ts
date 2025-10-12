@@ -1,8 +1,8 @@
 import { Timestamp } from "firebase/firestore";
 import {
   ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
-} from "../domain/training";
-import {addSet, deleteTraining, saveTraining, subscribeTrainingSets} from "../repositories/trainings";
+} from "../../domain/training";
+import {addSet, deleteTraining, saveTraining, subscribeTrainingSets} from "../../repositories/trainings";
 
 export type AddSetPayload = {
   userId: string;
