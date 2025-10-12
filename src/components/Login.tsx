@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { GoogleAuthProvider, GithubAuthProvider } from "firebase/auth";
-import {AuthProvider} from "@firebase/auth";
+import { AuthProvider } from "firebase/auth";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 
 interface LoginProps {
