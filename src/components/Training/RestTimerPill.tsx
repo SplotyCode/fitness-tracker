@@ -1,4 +1,5 @@
 import { JSX, useEffect, useState } from "react";
+import { FiClock } from "react-icons/fi";
 
 const RestTimerPill = ({ seconds }: { seconds: number }): JSX.Element => {
   const [target, setTarget] = useState(seconds);
@@ -24,7 +25,10 @@ const RestTimerPill = ({ seconds }: { seconds: number }): JSX.Element => {
       onClick={handleAdd30}
       title="Add +30s"
     >
-            Rest {mm}:{ss}
+      <span className="inline-flex items-center gap-2">
+        <FiClock aria-hidden={true} className={reached ? "text-yellow-300" : "text-neutral-300"} />
+        {mm}:{ss}
+      </span>
     </button>
   );
 }
