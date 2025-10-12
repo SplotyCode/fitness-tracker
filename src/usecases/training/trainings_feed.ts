@@ -1,5 +1,5 @@
-import type { SubscribeOptions } from "../types";
-import type { Unsubscribe } from "../../repositories/types";
+import type {SubscribeOptions} from "../types";
+import type {Unsubscribe} from "../../repositories/types";
 import {subscribeTrainings as subscribe} from "../../repositories/trainings";
 import {Training} from "../../domain/training";
 

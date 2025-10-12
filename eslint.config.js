@@ -25,6 +25,7 @@ export default [
       'react/react-in-jsx-scope': 'off',
       '@typescript-eslint/no-confusing-void-expression': 'off',
       'indent': ['error', 2, { SwitchCase: 1 }],
+      'object-curly-spacing': ['error', 'never'],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': 'error',
       '@typescript-eslint/explicit-function-return-type': [

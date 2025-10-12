@@ -1,10 +1,10 @@
-import { JSX, useMemo, useState } from "react";
-import { Exercise, TrainingSet } from "../../domain/training";
+import {JSX, useMemo, useState} from "react";
+import {Exercise, TrainingSet} from "../../domain/training";
 import SetsTable from "./SetsTable";
 import ProgressPanel from "./ProgressPanel";
-import { ProgressMatrix } from "../../usecases/training/training_session";
-import { calculateHeaderSummary } from "../../usecases/training/header_summary";
-import { FaChartLine } from "react-icons/fa";
+import {ProgressMatrix} from "../../usecases/training/training_session";
+import {calculateHeaderSummary} from "../../usecases/training/header_summary";
+import {FaChartLine} from "react-icons/fa";
 
 interface Props {
     exercise: Exercise;

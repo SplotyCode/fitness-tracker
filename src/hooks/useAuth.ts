@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
-import { onAuthStateChanged, signOut, signInWithPopup, User, AuthProvider } from "firebase/auth";
-import { auth } from "../firebase";
+import {useState, useEffect} from "react";
+import {onAuthStateChanged, signOut, signInWithPopup, User, AuthProvider} from "firebase/auth";
+import {auth} from "../firebase";
 
 export function useAuth(): {
   user: User | null;
@@ -36,5 +36,5 @@ export function useAuth(): {
     }
   };
 
-  return { user, isLoading, handleSignIn, handleSignOut };
+  return {user, isLoading, handleSignIn, handleSignOut};
 }

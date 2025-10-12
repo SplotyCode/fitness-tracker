@@ -1,8 +1,8 @@
-import type { NutritionGoals } from "../domain/nutrition";
+import type {NutritionGoals} from "../domain/nutrition";
 import {subscribeNutritionGoals, saveNutritionGoals as save} from "../repositories/profile";
-import type { Unsubscribe } from "../repositories/types";
-import type { SubscribeOptions } from "./types";
-import { getDefaultNutritionGoal } from "./nutrition";
+import type {Unsubscribe} from "../repositories/types";
+import type {SubscribeOptions} from "./types";
+import {getDefaultNutritionGoal} from "./nutrition";
 
 export const subscribeNutritionGoalsOrInit = (
   userId: string,

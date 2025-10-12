@@ -1,6 +1,6 @@
-import React, { JSX, useCallback } from "react";
+import React, {JSX, useCallback} from "react";
 
-const QuickInputs = ({ value, onChange }: { value: number; onChange: (n: number) => void }): JSX.Element => {
+const QuickInputs = ({value, onChange}: { value: number; onChange: (n: number) => void }): JSX.Element => {
   const inc = (): void => onChange(Number((value + 1).toFixed(1)));
   const dec = (): void => onChange(Math.max(0, Number((value - 1).toFixed(1))));
   const onInputChange = useCallback<React.ChangeEventHandler<HTMLInputElement>>((e) => {

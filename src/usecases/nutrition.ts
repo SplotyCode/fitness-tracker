@@ -1,4 +1,4 @@
-import { DayData, NutritionGoals, WeekData, NutritionColor, Level } from "../domain/nutrition";
+import {DayData, NutritionGoals, WeekData, NutritionColor, Level} from "../domain/nutrition";
 
 const colorHexMap: Record<NutritionColor, string> = {
   [NutritionColor.RED]: "#f85149",

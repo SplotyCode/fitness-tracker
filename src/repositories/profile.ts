@@ -1,5 +1,5 @@
-import type { NutritionGoals } from "../domain/nutrition";
-import type { Unsubscribe } from "./types";
+import type {NutritionGoals} from "../domain/nutrition";
+import type {Unsubscribe} from "./types";
 import {doc, onSnapshot, setDoc} from "firebase/firestore";
 import {db} from "../firebase";
 

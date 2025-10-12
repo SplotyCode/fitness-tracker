@@ -1,7 +1,7 @@
 import {collection, doc, onSnapshot, setDoc} from "firebase/firestore";
 import {db} from "../firebase";
-import type { DayData, DayUpdateData } from "../domain/nutrition";
-import type { Unsubscribe } from "./types";
+import type {DayData, DayUpdateData} from "../domain/nutrition";
+import type {Unsubscribe} from "./types";
 
 export function subscribeDays(userId: string, cb: (days: DayData[], hasPendingWrites: boolean) => void, onError?: (e: unknown) => void): Unsubscribe {
   const daysCollectionRef = collection(db, "users", userId, "days");

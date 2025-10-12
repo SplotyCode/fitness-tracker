@@ -1,5 +1,5 @@
-import { TrainingSet } from "../../domain/training";
-import { estimate1RM } from "./one_rep_max";
+import {TrainingSet} from "../../domain/training";
+import {estimate1RM} from "./one_rep_max";
 
 export interface HeaderSummary {
   topLoad: number | null;
@@ -8,7 +8,7 @@ export interface HeaderSummary {
 
 export function calculateHeaderSummary(sets: TrainingSet[]): HeaderSummary {
   if (sets.length === 0) {
-    return { topLoad: null, e1rm: null };
+    return {topLoad: null, e1rm: null};
   }
 
   let topLoad = 0;
@@ -28,5 +28,5 @@ export function calculateHeaderSummary(sets: TrainingSet[]): HeaderSummary {
 
   const roundedTop = Number(topLoad.toFixed(1));
   const roundedE1 = Math.round(e1rm);
-  return { topLoad: roundedTop, e1rm: roundedE1 };
+  return {topLoad: roundedTop, e1rm: roundedE1};
 }

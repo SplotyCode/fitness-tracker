@@ -1,4 +1,4 @@
-import { Timestamp } from "firebase/firestore";
+import {Timestamp} from "firebase/firestore";
 import {
   ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
 } from "../../domain/training";
@@ -46,7 +46,7 @@ export async function addTrainingSet(params: AddSetPayload): Promise<{ id: strin
   const restSec = 30;
 
   if (params.mode === "bilateral") {
-    const { weightKg, reps } = params;
+    const {weightKg, reps} = params;
     const data: BilateralSet = {
       trainingId, exerciseId, mode: "bilateral",
       weightKg, reps,
@@ -56,7 +56,7 @@ export async function addTrainingSet(params: AddSetPayload): Promise<{ id: strin
     };
     return addSet(userId, trainingId, data);
   } else {
-    const { weightLeftKg, weightRightKg, repsLeft, repsRight } = params;
+    const {weightLeftKg, weightRightKg, repsLeft, repsRight} = params;
     const data: UnilateralSet = {
       trainingId, exerciseId, mode: "unilateral",
       weightLeftKg, weightRightKg, repsLeft, repsRight,
@@ -68,13 +68,13 @@ export async function addTrainingSet(params: AddSetPayload): Promise<{ id: strin
 }
 
 export async function endSession(
-  { userId, trainingId }: { userId: string; trainingId: string }
+  {userId, trainingId}: { userId: string; trainingId: string }
 ): Promise<void> {
-  await saveTraining(userId, trainingId, { endedAt: Timestamp.now() } as Partial<Training>);
+  await saveTraining(userId, trainingId, {endedAt: Timestamp.now()} as Partial<Training>);
 }
 
 export async function deleteSession(
-  { userId, trainingId }: { userId: string; trainingId: string }
+  {userId, trainingId}: { userId: string; trainingId: string }
 ): Promise<void> {
   await deleteTraining(userId, trainingId);
 }
@@ -83,7 +83,7 @@ export async function buildProgressMatrix(
   params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number },
   preloadedTrainings: { id: string; data: Training }[]
 ): Promise<ProgressMatrix> {
-  const { userId, exerciseId, trainingsLimit } = params;
+  const {userId, exerciseId, trainingsLimit} = params;
 
   const allTrainings: { id: string; data: Training }[] = [...preloadedTrainings].sort((a,b) =>
     b.data.startedAt.toMillis() - a.data.startedAt.toMillis()
@@ -104,7 +104,7 @@ export async function buildProgressMatrix(
       .map(s => s.data)
       .filter(s => s.exerciseId === exerciseId);
     const dateIso = t.data.startedAt.toDate().toISOString()
-    perTrainingSets.push({ trainingId: t.id, date: dateIso, sets: exerciseSets });
+    perTrainingSets.push({trainingId: t.id, date: dateIso, sets: exerciseSets});
   }
 
   const isUnilateral = getExercise(exerciseId).isUnilateral;
@@ -115,19 +115,19 @@ export async function buildProgressMatrix(
   const rows: ProgressMatrix["rows"] = [];
   for (let i = 0; i < maxSets; i++) {
     if (isUnilateral) {
-      rows.push({ label: `Set ${i + 1} L`, setIndex: i, side: "L" });
-      rows.push({ label: `Set ${i + 1} R`, setIndex: i, side: "R" });
+      rows.push({label: `Set ${i + 1} L`, setIndex: i, side: "L"});
+      rows.push({label: `Set ${i + 1} R`, setIndex: i, side: "R"});
     } else {
-      rows.push({ label: `Set ${i + 1}`, setIndex: i });
+      rows.push({label: `Set ${i + 1}`, setIndex: i});
     }
   }
 
-  const sessions = perTrainingSets.map(t => ({ trainingId: t.trainingId, date: t.date }));
+  const sessions = perTrainingSets.map(t => ({trainingId: t.trainingId, date: t.date}));
 
-  const cells: (ProgressCell | null)[][] = rows.map(() => Array.from({ length: sessions.length }, () => null as ProgressCell | null));
+  const cells: (ProgressCell | null)[][] = rows.map(() => Array.from({length: sessions.length}, () => null as ProgressCell | null));
 
   for (let col = 0; col < sessions.length; col++) {
-    const { sets } = perTrainingSets[col];
+    const {sets} = perTrainingSets[col];
     for (let r = 0; r < rows.length; r++) {
       const row = rows[r];
       const base = sets.find(s => s.setIndex === row.setIndex);
@@ -136,9 +136,9 @@ export async function buildProgressMatrix(
       if (isUnilateral && base.mode === "unilateral") {
         const weight = row.side === "L" ? base.weightLeftKg : base.weightRightKg;
         const reps   = row.side === "L" ? base.repsLeft     : base.repsRight;
-        cells[r][col] = { weight, reps, side: row.side };
+        cells[r][col] = {weight, reps, side: row.side};
       } else if (!isUnilateral && base.mode === "bilateral") {
-        cells[r][col] = { weight: base.weightKg, reps: base.reps };
+        cells[r][col] = {weight: base.weightKg, reps: base.reps};
       } else {
         cells[r][col] = null;
       }
@@ -156,7 +156,7 @@ export async function buildProgressMatrix(
     }
   }
 
-  return { sessions, rows, cells };
+  return {sessions, rows, cells};
 }
 
 
@@ -168,7 +168,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
   params: { userId: string; currentTrainingId: string; exerciseId: ExerciseId },
   preloadedTrainings: { id: string; data: Training }[]
 ): Promise<LastDefaults | null> {
-  const { userId, currentTrainingId, exerciseId } = params;
+  const {userId, currentTrainingId, exerciseId} = params;
 
   const allTrainings: { id: string; data: Training }[]= [...preloadedTrainings].sort(
     (a, b) => b.data.startedAt.toMillis() - a.data.startedAt.toMillis()
@@ -214,7 +214,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
       };
     } else {
       const b = last;
-      return { mode: "bilateral", weightKg: b.weightKg, reps: b.reps };
+      return {mode: "bilateral", weightKg: b.weightKg, reps: b.reps};
     }
   }
 

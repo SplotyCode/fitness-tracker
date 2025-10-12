@@ -1,7 +1,7 @@
 import {JSX, useState} from "react";
-import { FaFire, FaDrumstickBite, FaOilCan, FaEdit } from "react-icons/fa";
+import {FaFire, FaDrumstickBite, FaOilCan, FaEdit} from "react-icons/fa";
 
-import { DayData, DayUpdateData, NutritionGoals } from "../../domain/nutrition";
+import {DayData, DayUpdateData, NutritionGoals} from "../../domain/nutrition";
 import {Training} from "../../domain/training";
 import ProgressBar from "../ProgressBar";
 import EditEntryForm from "./EditEntryForm";

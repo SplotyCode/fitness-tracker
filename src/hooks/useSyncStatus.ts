@@ -24,7 +24,7 @@ export default function useSyncStatus(): {
   console.log("Pending writes", pendingWrites)
 
   const registerPendingWrites = useCallback((key: string, hasPending: boolean) => {
-    setPendingWrites(prev => ({ ...prev, [key]: hasPending }));
+    setPendingWrites(prev => ({...prev, [key]: hasPending}));
   }, []);
   const clearPendingWrites = useCallback(() => {
     setPendingWrites({});
@@ -36,5 +36,5 @@ export default function useSyncStatus(): {
     return 'synced';
   }, [isOnline, pendingWrites]);
 
-  return { syncStatus, registerPendingWrites, clearPendingWrites };
+  return {syncStatus, registerPendingWrites, clearPendingWrites};
 }

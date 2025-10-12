@@ -1,4 +1,4 @@
-import { WeekData, DayData } from "../domain/nutrition";
+import {WeekData, DayData} from "../domain/nutrition";
 
 export const calculateAverageForWeek = (
   week: WeekData,

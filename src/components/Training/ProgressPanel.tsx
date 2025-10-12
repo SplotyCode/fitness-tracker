@@ -1,7 +1,7 @@
-import { JSX, useEffect, useState } from "react";
-import { ProgressMatrix } from "../../usecases/training/training_session";
+import {JSX, useEffect, useState} from "react";
+import {ProgressMatrix} from "../../usecases/training/training_session";
 
-const ProgressPanel = ({ loadProgress }: { loadProgress: () => Promise<ProgressMatrix> }): JSX.Element => {
+const ProgressPanel = ({loadProgress}: { loadProgress: () => Promise<ProgressMatrix> }): JSX.Element => {
   const [mx, setMx] = useState<ProgressMatrix | null>(null);
 
   useEffect(() => {
@@ -56,7 +56,7 @@ const ProgressPanel = ({ loadProgress }: { loadProgress: () => Promise<ProgressM
   );
 }
 
-const Delta = ({ w, r }: { w: number; r: number }): JSX.Element => {
+const Delta = ({w, r}: { w: number; r: number }): JSX.Element => {
   const both = [];
   if (w !== 0) both.push(`${w > 0 ? "+" : ""}${w}kg`);
   if (r !== 0) both.push(`${r > 0 ? "+" : ""}${r}r`);

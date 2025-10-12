@@ -1,7 +1,7 @@
-import { SyncStatus } from "../hooks/useSyncStatus";
-import { User } from "firebase/auth";
+import {SyncStatus} from "../hooks/useSyncStatus";
+import {User} from "firebase/auth";
 import SyncBadge from "./SyncBadge";
-import { FaBullseye, FaPlus, FaSignOutAlt } from "react-icons/fa";
+import {FaBullseye, FaPlus, FaSignOutAlt} from "react-icons/fa";
 import React from "react";
 import useIsMobile from "../hooks/useIsMobile";
 

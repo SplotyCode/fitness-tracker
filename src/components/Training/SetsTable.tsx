@@ -1,5 +1,5 @@
-import { JSX, useEffect, useState } from "react";
-import { ExerciseId, TrainingSet } from "../../domain/training";
+import {JSX, useEffect, useState} from "react";
+import {ExerciseId, TrainingSet} from "../../domain/training";
 import {FaEdit, FaSave, FaTrashAlt, FaTimes} from "react-icons/fa";
 import QuickInputs from "./QuickInputs";
 
@@ -36,8 +36,8 @@ const SetsTable = ({
     setEditingId(null);
   };
 
-  const [newBilat, setNewBilat] = useState<{ weightKg: number; reps: number }>({ weightKg: 20, reps: 8 });
-  const [newUni, setNewUni] = useState<{ weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number }>({ weightLeftKg: 20, weightRightKg: 20, repsLeft: 8, repsRight: 8 });
+  const [newBilat, setNewBilat] = useState<{ weightKg: number; reps: number }>({weightKg: 20, reps: 8});
+  const [newUni, setNewUni] = useState<{ weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number }>({weightLeftKg: 20, weightRightKg: 20, repsLeft: 8, repsRight: 8});
 
   useEffect(() => {
     let cancelled = false;
@@ -46,7 +46,7 @@ const SetsTable = ({
         const last = await loadLastDefaults();
         if (cancelled || !last) return;
         if (!unilateral && last.mode === "bilateral") {
-          setNewBilat({ weightKg: last.weightKg, reps: last.reps });
+          setNewBilat({weightKg: last.weightKg, reps: last.reps});
         } else if (unilateral && last.mode === "unilateral") {
           setNewUni({
             weightLeftKg: last.weightLeftKg,
@@ -113,20 +113,20 @@ const SetsTable = ({
                 {unilateral ? (
                   <>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={row.weightLeftKg} onChange={n => setDraft({ ...row, weightLeftKg: n })} /> : row.mode === "unilateral" ? row.weightLeftKg : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.weightLeftKg} onChange={n => setDraft({...row, weightLeftKg: n})} /> : row.mode === "unilateral" ? row.weightLeftKg : "—"}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={row.repsLeft} onChange={n => setDraft({ ...row, repsLeft: n })} /> : row.mode === "unilateral" ? row.repsLeft : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.repsLeft} onChange={n => setDraft({...row, repsLeft: n})} /> : row.mode === "unilateral" ? row.repsLeft : "—"}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={row.weightRightKg} onChange={n => setDraft({ ...row, weightRightKg: n })} /> : row.mode === "unilateral" ? row.weightRightKg : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.weightRightKg} onChange={n => setDraft({...row, weightRightKg: n})} /> : row.mode === "unilateral" ? row.weightRightKg : "—"}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={row.repsRight} onChange={n => setDraft({ ...row, repsRight: n })} /> : row.mode === "unilateral" ? row.repsRight : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.repsRight} onChange={n => setDraft({...row, repsRight: n})} /> : row.mode === "unilateral" ? row.repsRight : "—"}</td>
                   </>
                 ) : (
                   <>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={(row).weightKg} onChange={n => setDraft({ ...row, weightKg: n })} /> : row.mode === "bilateral" ? row.weightKg : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={(row).weightKg} onChange={n => setDraft({...row, weightKg: n})} /> : row.mode === "bilateral" ? row.weightKg : "—"}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={(row).reps} onChange={n => setDraft({ ...row, reps: n })} /> : row.mode === "bilateral" ? row.reps : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={(row).reps} onChange={n => setDraft({...row, reps: n})} /> : row.mode === "bilateral" ? row.reps : "—"}</td>
                   </>
                 )}
                 <td className="text-right">
@@ -159,25 +159,25 @@ const SetsTable = ({
             {unilateral ? (
               <>
                 <td>
-                  <QuickInputs value={newUni.weightLeftKg} onChange={(n) => setNewUni({ ...newUni, weightLeftKg: Math.max(0, Number(n.toFixed(1))) })} />
+                  <QuickInputs value={newUni.weightLeftKg} onChange={(n) => setNewUni({...newUni, weightLeftKg: Math.max(0, Number(n.toFixed(1)))})} />
                 </td>
                 <td>
-                  <QuickInputs value={newUni.repsLeft} onChange={(n) => setNewUni({ ...newUni, repsLeft: Math.max(0, Math.round(n)) })} />
+                  <QuickInputs value={newUni.repsLeft} onChange={(n) => setNewUni({...newUni, repsLeft: Math.max(0, Math.round(n))})} />
                 </td>
                 <td>
-                  <QuickInputs value={newUni.weightRightKg} onChange={(n) => setNewUni({ ...newUni, weightRightKg: Math.max(0, Number(n.toFixed(1))) })} />
+                  <QuickInputs value={newUni.weightRightKg} onChange={(n) => setNewUni({...newUni, weightRightKg: Math.max(0, Number(n.toFixed(1)))})} />
                 </td>
                 <td>
-                  <QuickInputs value={newUni.repsRight} onChange={(n) => setNewUni({ ...newUni, repsRight: Math.max(0, Math.round(n)) })} />
+                  <QuickInputs value={newUni.repsRight} onChange={(n) => setNewUni({...newUni, repsRight: Math.max(0, Math.round(n))})} />
                 </td>
               </>
             ) : (
               <>
                 <td>
-                  <QuickInputs value={newBilat.weightKg} onChange={(n) => setNewBilat({ ...newBilat, weightKg: Math.max(0, Number(n.toFixed(1))) })} />
+                  <QuickInputs value={newBilat.weightKg} onChange={(n) => setNewBilat({...newBilat, weightKg: Math.max(0, Number(n.toFixed(1)))})} />
                 </td>
                 <td>
-                  <QuickInputs value={newBilat.reps} onChange={(n) => setNewBilat({ ...newBilat, reps: Math.max(0, Math.round(n)) })} />
+                  <QuickInputs value={newBilat.reps} onChange={(n) => setNewBilat({...newBilat, reps: Math.max(0, Math.round(n))})} />
                 </td>
               </>
             )}

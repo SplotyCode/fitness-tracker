@@ -2,9 +2,9 @@
 
 import React, {useCallback, useEffect, useState} from "react";
 import {FaSpinner} from "react-icons/fa";
-import { Timestamp } from "firebase/firestore";
+import {Timestamp} from "firebase/firestore";
 
-import { DayUpdateData, NutritionGoals, WeekData } from "../domain/nutrition";
+import {DayUpdateData, NutritionGoals, WeekData} from "../domain/nutrition";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import GoalsModal from "./GoalsModal";
@@ -14,9 +14,9 @@ import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
 import TrainingModal from "./Training/TrainingModal";
 import {Training} from "../domain/training";
-import { subscribeWeeklyData, saveDayData as ucSaveDayData } from "../usecases/weekly_data";
-import { subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals } from "../usecases/profile_subscriptions";
-import { subscribeTrainings, groupTrainingsByDay } from "../usecases/training/trainings_feed";
+import {subscribeWeeklyData, saveDayData as ucSaveDayData} from "../usecases/weekly_data";
+import {subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals} from "../usecases/profile_subscriptions";
+import {subscribeTrainings, groupTrainingsByDay} from "../usecases/training/trainings_feed";
 import {newTrainingId, saveTraining} from "../repositories/trainings";
 
 const WeightTracker: React.FC = () => {
@@ -25,7 +25,7 @@ const WeightTracker: React.FC = () => {
   const [trainings, setTrainings] = useState<{ id: string; data: Training }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
+  const {syncStatus, registerPendingWrites, clearPendingWrites} = useSyncStatus();
   const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
 
   useEffect(() => {
@@ -42,17 +42,17 @@ const WeightTracker: React.FC = () => {
     const unsubscribeDays = subscribeWeeklyData(user.uid, (weeks) => {
       setWeeklyData(weeks);
       setIsLoading(false);
-    }, { onPendingWrites: registerPendingWrites });
+    }, {onPendingWrites: registerPendingWrites});
 
     const unsubscribeGoals = subscribeNutritionGoalsOrInit(user.uid, (goals) => {
       setNutritionGoals(goals);
-    }, { onPendingWrites: registerPendingWrites });
+    }, {onPendingWrites: registerPendingWrites});
 
     const unsubscribeTrainings = subscribeTrainings(user.uid, (arr) => {
       console.log("Trainings updated", arr);
       const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
       setTrainings(sorted);
-    }, { onPendingWrites: registerPendingWrites });
+    }, {onPendingWrites: registerPendingWrites});
 
     return () => {
       unsubscribeDays();
@@ -99,7 +99,7 @@ const WeightTracker: React.FC = () => {
       console.log("Creating training", id, data);
       await saveTraining(user.uid, id, data);
       console.log("Training created", id, data);
-      setEditingTraining({ id, data });
+      setEditingTraining({id, data});
     } catch (e) {
       console.error("Failed to create training", e);
     }

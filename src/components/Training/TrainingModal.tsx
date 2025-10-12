@@ -1,10 +1,10 @@
 import {JSX, useEffect, useMemo, useState} from "react";
 import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain/training";
-import { subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDeleteSet } from "../../repositories/trainings";
-import { addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining } from "../../usecases/training/training_session";
+import {subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDeleteSet} from "../../repositories/trainings";
+import {addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining} from "../../usecases/training/training_session";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
-import { FaFlagCheckered, FaTrashAlt } from "react-icons/fa";
+import {FaFlagCheckered, FaTrashAlt} from "react-icons/fa";
 
 interface Props {
     userId: string;
@@ -34,19 +34,19 @@ const TrainingModal = ({
       p:
         | { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }
         | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
-    ) => addTrainingSet({ userId, trainingId, ...p }),
+    ) => addTrainingSet({userId, trainingId, ...p}),
     updateSet: (setId: string, data: Partial<TrainingSet>) =>
       repoUpdateSet(userId, trainingId, setId, data),
     deleteSet: (setId: string) => repoDeleteSet(userId, trainingId, setId),
-    end: () => endSession({ userId, trainingId }),
-    remove: () => deleteSession({ userId, trainingId }),
+    end: () => endSession({userId, trainingId}),
+    remove: () => deleteSession({userId, trainingId}),
     progressFor: (exerciseId: ExerciseId, trainingsLimit = 5) =>
-      buildProgressMatrix({ userId, exerciseId, trainingsLimit }, trainings),
+      buildProgressMatrix({userId, exerciseId, trainingsLimit}, trainings),
     lastDefaultsFromPrev: (exerciseId: ExerciseId) =>
-      getLastExerciseDefaultsFromPreviousTraining({ userId, currentTrainingId: trainingId, exerciseId }, trainings),
+      getLastExerciseDefaultsFromPreviousTraining({userId, currentTrainingId: trainingId, exerciseId}, trainings),
   }), [userId, trainingId, trainings]);
 
-  const { add, updateSet, deleteSet, end, remove, progressFor, lastDefaultsFromPrev } = actions;
+  const {add, updateSet, deleteSet, end, remove, progressFor, lastDefaultsFromPrev} = actions;
 
   const [openExerciseId, setOpenExerciseId] = useState<ExerciseId | null>(null);
   const [addedExerciseIds, setAddedExerciseIds] = useState<ExerciseId[]>([]);
@@ -71,7 +71,7 @@ const TrainingModal = ({
       | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
   ): Promise<void> => {
     await add(payload);
-    setLastSaved({ exerciseId: payload.exerciseId, at: Date.now() });
+    setLastSaved({exerciseId: payload.exerciseId, at: Date.now()});
   };
 
   const handleEnd = async (): Promise<void> => { await end(); onClose(); };

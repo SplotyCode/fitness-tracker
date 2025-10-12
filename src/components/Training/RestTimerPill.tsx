@@ -1,7 +1,7 @@
-import { JSX, useEffect, useState } from "react";
-import { FiClock } from "react-icons/fi";
+import {JSX, useEffect, useState} from "react";
+import {FiClock} from "react-icons/fi";
 
-const RestTimerPill = ({ seconds }: { seconds: number }): JSX.Element => {
+const RestTimerPill = ({seconds}: { seconds: number }): JSX.Element => {
   const [target, setTarget] = useState(seconds);
   const [passed, setPassed] = useState(0);
 

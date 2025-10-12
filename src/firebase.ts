@@ -1,6 +1,6 @@
-import { initializeApp, FirebaseOptions } from "firebase/app";
-import { initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver } from "firebase/auth";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, CACHE_SIZE_UNLIMITED } from "firebase/firestore";
+import {initializeApp, FirebaseOptions} from "firebase/app";
+import {initializeAuth, indexedDBLocalPersistence, browserLocalPersistence, browserPopupRedirectResolver} from "firebase/auth";
+import {initializeFirestore, persistentLocalCache, persistentMultipleTabManager, CACHE_SIZE_UNLIMITED} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY as string,
@@ -14,8 +14,8 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 export const auth = initializeAuth(app, {
-    persistence: [indexedDBLocalPersistence, browserLocalPersistence],
-    popupRedirectResolver: browserPopupRedirectResolver,
+  persistence: [indexedDBLocalPersistence, browserLocalPersistence],
+  popupRedirectResolver: browserPopupRedirectResolver,
 });
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache({
