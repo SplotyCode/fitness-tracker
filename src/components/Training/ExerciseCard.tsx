@@ -39,8 +39,12 @@ const ExerciseCard: React.FC<Props> = ({
           {exercise.isUnilateral && (
             <span className="text-xs px-2 py-1 rounded-full bg-neutral-700">Unilateral</span>
           )}
-          <span className="text-xs px-2 py-1 rounded-full bg-emerald-700">e1RM {headerSummary.e1rm}</span>
-          <span className="text-xs px-2 py-1 rounded-full bg-sky-700">Top {headerSummary.topLoad} kg</span>
+          {headerSummary.e1rm !== null && (
+            <span className="text-xs px-2 py-1 rounded-full bg-emerald-700">e1RM {headerSummary.e1rm}</span>
+          )}
+          {headerSummary.topLoad !== null && (
+            <span className="text-xs px-2 py-1 rounded-full bg-sky-700">Top {headerSummary.topLoad} kg</span>
+          )}
         </div>
         <button
           className="text-sm px-3 py-1 rounded-xl bg-neutral-700 hover:bg-neutral-600"

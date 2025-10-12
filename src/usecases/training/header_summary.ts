@@ -1,11 +1,15 @@
 import { TrainingSet } from "../../domain/training";
 
 export interface HeaderSummary {
-  topLoad: number;
-  e1rm: number;
+  topLoad: number | null;
+  e1rm: number | null;
 }
 
 export function calculateHeaderSummary(sets: TrainingSet[]): HeaderSummary {
+  if (sets.length === 0) {
+    return { topLoad: null, e1rm: null };
+  }
+
   let topLoad = 0;
   let e1rm = 0;
 
