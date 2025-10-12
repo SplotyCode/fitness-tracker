@@ -151,12 +151,13 @@ const WeightTracker: React.FC = () => {
           onOpenTrainingById={handleOpenTrainingById}
         />
       </div>
-      <GoalsModal
-        open={showGoalsModal}
-        onClose={() => setShowGoalsModal(false)}
-        goals={nutritionGoals}
-        onChange={handleSaveNutritionGoals}
-      />
+      {showGoalsModal && (
+        <GoalsModal
+          onClose={() => setShowGoalsModal(false)}
+          goals={nutritionGoals}
+          onChange={handleSaveNutritionGoals}
+        />
+      )}
       {editingTraining && (
         <TrainingModal
           userId={user.uid}

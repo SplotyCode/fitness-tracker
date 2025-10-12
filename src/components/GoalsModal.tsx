@@ -5,7 +5,6 @@ import { Level, NutritionColor } from "../domain/nutrition";
 import ProgressBar from "./ProgressBar";
 
 interface GoalsModalProps {
-    open: boolean;
     onClose: () => void;
     goals: NutritionGoals[];
     onChange: (goals: NutritionGoals[]) => void;
@@ -21,7 +20,7 @@ const sortGoals = (a: NutritionGoals[], asc = true): NutritionGoals[] =>
       : new Date(y.validFrom).getTime() - new Date(x.validFrom).getTime()
   );
 
-const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange }) => {
+const GoalsModal: React.FC<GoalsModalProps> = ({ onClose, goals, onChange }) => {
   const [mode, setMode] = useState<ViewMode>("list");
   const [editing, setEditing] = useState<NutritionGoals | null>(null);
 
@@ -78,8 +77,6 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
         onChange(goals.filter((g) => g !== goal));
       }
     };
-
-    if (!open) return null;
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
