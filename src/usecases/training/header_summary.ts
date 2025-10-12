@@ -1,4 +1,5 @@
 import { TrainingSet } from "../../domain/training";
+import { estimate1RM } from "./one_rep_max";
 
 export interface HeaderSummary {
   topLoad: number | null;
@@ -16,11 +17,11 @@ export function calculateHeaderSummary(sets: TrainingSet[]): HeaderSummary {
   for (const s of sets) {
     if (s.mode === "bilateral") {
       topLoad = Math.max(topLoad, s.weightKg);
-      e1rm = Math.max(e1rm, s.weightKg * (1 + s.reps / 30));
+      e1rm = Math.max(e1rm, estimate1RM(s.weightKg, s.reps));
     } else {
       topLoad = Math.max(topLoad, s.weightLeftKg, s.weightRightKg);
-      const leftE1rm = s.weightLeftKg * (1 + s.repsLeft / 30);
-      const rightE1rm = s.weightRightKg * (1 + s.repsRight / 30);
+      const leftE1rm = estimate1RM(s.weightLeftKg, s.repsLeft);
+      const rightE1rm = estimate1RM(s.weightRightKg, s.repsRight);
       e1rm = Math.max(e1rm, leftE1rm, rightE1rm);
     }
   }
