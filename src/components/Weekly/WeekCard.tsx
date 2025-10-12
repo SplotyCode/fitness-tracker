@@ -30,6 +30,10 @@ const WeekCard = ({
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
+  const trainingsCountThisWeek = week.days.reduce((acc, day) => {
+    const key = day.date.split('T')[0];
+    return acc + (trainingsByDay[key]?.length ?? 0);
+  }, 0);
 
   const weightDiff =
     currentWeekAvgWeight !== null && lastWeekAvgWeight !== null
@@ -43,7 +47,7 @@ const WeekCard = ({
   return (
     <article className="p-6 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
       <header
-        className="flex justify-between items-center mb-6 cursor-pointer"
+        className={`flex justify-between items-center ${showDays ? 'mb-6' : ''} cursor-pointer`}
         onClick={handleToggle}
       >
         <div>
@@ -52,6 +56,8 @@ const WeekCard = ({
             Avg: {weeklyKcalAvg !== null ? Math.round(weeklyKcalAvg) : "-"} kcal / {" "}
             {weeklyProteinAvg !== null ? Math.round(weeklyProteinAvg) : "-"}g P / {" "}
             {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
+            {" "}
+            • Trainings: {trainingsCountThisWeek}/4
           </p>
         </div>
         <div className="flex items-center gap-4">
