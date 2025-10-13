@@ -14,8 +14,8 @@ interface DayCardProps {
   day: DayData;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   nutritionGoals: NutritionGoals;
-  trainings?: { id: string; data: Training }[];
-  onOpenTrainingById?: (trainingId: string) => void;
+  trainings: { id: string; data: Training }[];
+  onOpenTrainingById: (trainingId: string) => void;
 }
 
 const DayCard = ({
@@ -73,7 +73,6 @@ const DayCard = ({
           title="View training"
           onClick={(e) => {
             e.stopPropagation();
-            if (!onOpenTrainingById) return;
             if (trainings.length === 1) {
               onOpenTrainingById(trainings[0].id);
             } else {
@@ -95,7 +94,7 @@ const DayCard = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     setShowTrainingMenu(false);
-                    onOpenTrainingById?.(t.id);
+                    onOpenTrainingById(t.id);
                   }}
                   className="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
                 >

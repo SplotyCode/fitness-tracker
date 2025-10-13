@@ -12,8 +12,8 @@ interface WeekCardProps {
   lastWeekAvgWeight: number | null;
   initialIsOpen: boolean;
   nutritionGoals: NutritionGoals;
-  trainingsByDay?: Partial<Record<string, { id: string; data: Training }[]>>;
-  onOpenTrainingById?: (trainingId: string) => void;
+  trainingsByDay: Partial<Record<string, { id: string; data: Training }[]>>;
+  onOpenTrainingById: (trainingId: string) => void;
 }
 
 const WeekCard = ({
@@ -106,7 +106,7 @@ const WeekCard = ({
                 day={day}
                 onSaveDay={onSaveDay}
                 nutritionGoals={nutritionGoals}
-                trainings={trainingsByDay[day.date.split('T')[0]]}
+                trainings={trainingsByDay[day.date.split('T')[0]] ?? []}
                 onOpenTrainingById={onOpenTrainingById}
               />
             ))}
