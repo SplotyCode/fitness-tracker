@@ -59,11 +59,11 @@ const WeekCard = ({
             • Cardio: {trainingStats.cardio}
             {trainingStats.cardioKcal > 0 || trainingStats.cardioMin > 0
               ? ` (${[
-                  trainingStats.cardioKcal > 0 ? `${trainingStats.cardioKcal} kcal` : null,
-                  trainingStats.cardioMin > 0 ? `${trainingStats.cardioMin} min` : null,
-                ]
-                  .filter(Boolean)
-                  .join(", ")})`
+                trainingStats.cardioKcal > 0 ? `${trainingStats.cardioKcal} kcal` : null,
+                trainingStats.cardioMin > 0 ? `${trainingStats.cardioMin} min` : null,
+              ]
+                .filter(Boolean)
+                .join(", ")})`
               : ""}
           </p>
         </div>

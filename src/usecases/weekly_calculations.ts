@@ -45,7 +45,7 @@ export const calculateTrainingStatsForWeek = (
       }
     }
     return acc;
-  }, { strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0 });
+  }, {strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0});
 };
 
 export const getMonday = (d: Date): Date => {
