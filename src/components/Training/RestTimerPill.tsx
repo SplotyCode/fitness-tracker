@@ -1,23 +1,36 @@
 import {JSX, useEffect, useState} from "react";
 import {FiClock} from "react-icons/fi";
 
-const RestTimerPill = ({seconds}: { seconds: number }): JSX.Element => {
-  const [target, setTarget] = useState(seconds);
-  const [passed, setPassed] = useState(0);
+interface Props {
+  seconds: number;
+  at: number;
+}
+
+const RestTimerPill = ({seconds, at}: Props): JSX.Element => {
+  const [extraSec, setExtraSec] = useState(0);
+  const [now, setNow] = useState<number>(Date.now());
 
   useEffect(() => {
-    const id = setInterval(() => setPassed((s) => s + 1), 1000);
+    setExtraSec(0);
+  }, [at]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const remaining = Math.max(0, target - passed);
-  const handleAdd30 = (): void => setTarget((t) => t + 30);
+  const totalPlannedSec = seconds + extraSec;
+  const targetMs = at + totalPlannedSec * 1000;
+  const remainingSec = Math.max(0, Math.ceil((targetMs - now) / 1000));
+  const passedSec = Math.max(0, Math.floor((now - at) / 1000));
 
-  const shown = remaining > 0 ? remaining : passed;
+  const handleAdd30 = (): void => setExtraSec((s) => s + 30);
+
+  const shown = remainingSec > 0 ? remainingSec : passedSec;
   const mm = Math.floor(shown / 60).toString();
   const ss = (shown % 60).toString().padStart(2, "0");
 
-  const reached = remaining === 0;
+  const reached = remainingSec === 0;
 
   return (
     <button

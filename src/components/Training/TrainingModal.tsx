@@ -87,10 +87,10 @@ const TrainingModal = ({
         <header className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Training</h3>
           <div className="flex items-center gap-3">
-            {lastSaved?.exerciseId && (
+            {lastSaved && (
               <RestTimerPill
-                key={`${lastSaved.exerciseId}-${lastSaved.at}`}
                 seconds={getExercise(lastSaved.exerciseId).restSec}
+                at={lastSaved.at}
               />
             )}
             <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
