@@ -1,9 +1,10 @@
 import {JSX, useState} from "react";
-import { FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp } from "react-icons/fa";
+import {FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp} from "react-icons/fa";
 
-import {DayUpdateData, NutritionGoals, WeekData} from "../types";
+import {DayUpdateData, NutritionGoals, WeekData} from "../../domain/nutrition";
+import {Training} from "../../domain/training";
 import DayCard from "./DayCard";
-import { calculateAverageForWeek } from "../../utils/weekly_calculations";
+import {calculateAverageForWeek} from "../../usecases/weekly_calculations";
 
 interface WeekCardProps {
   week: WeekData;
@@ -11,6 +12,8 @@ interface WeekCardProps {
   lastWeekAvgWeight: number | null;
   initialIsOpen: boolean;
   nutritionGoals: NutritionGoals;
+  trainingsByDay: Partial<Record<string, { id: string; data: Training }[]>>;
+  onOpenTrainingById: (trainingId: string) => void;
 }
 
 const WeekCard = ({
@@ -19,12 +22,18 @@ const WeekCard = ({
   lastWeekAvgWeight,
   initialIsOpen,
   nutritionGoals,
+  trainingsByDay = {},
+  onOpenTrainingById,
 }: WeekCardProps): JSX.Element => {
   const [showDays, setShowDays] = useState(initialIsOpen);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
+  const trainingsCountThisWeek = week.days.reduce((acc, day) => {
+    const key = day.date.split('T')[0];
+    return acc + (trainingsByDay[key]?.length ?? 0);
+  }, 0);
 
   const weightDiff =
     currentWeekAvgWeight !== null && lastWeekAvgWeight !== null
@@ -38,7 +47,7 @@ const WeekCard = ({
   return (
     <article className="p-6 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
       <header
-        className="flex justify-between items-center mb-6 cursor-pointer"
+        className={`flex justify-between items-center ${showDays ? 'mb-6' : ''} cursor-pointer`}
         onClick={handleToggle}
       >
         <div>
@@ -47,6 +56,8 @@ const WeekCard = ({
             Avg: {weeklyKcalAvg !== null ? Math.round(weeklyKcalAvg) : "-"} kcal / {" "}
             {weeklyProteinAvg !== null ? Math.round(weeklyProteinAvg) : "-"}g P / {" "}
             {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
+            {" "}
+            • Trainings: {trainingsCountThisWeek}/4
           </p>
         </div>
         <div className="flex items-center gap-4">
@@ -95,6 +106,8 @@ const WeekCard = ({
                 day={day}
                 onSaveDay={onSaveDay}
                 nutritionGoals={nutritionGoals}
+                trainings={trainingsByDay[day.date.split('T')[0]] ?? []}
+                onOpenTrainingById={onOpenTrainingById}
               />
             ))}
           </div>

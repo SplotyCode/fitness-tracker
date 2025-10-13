@@ -8,8 +8,8 @@ import {
   ResponsiveContainer,
   Dot,
 } from "recharts";
-import { WeekData } from "./types";
-import { calculateAverageForWeek } from "../utils/weekly_calculations";
+import {WeekData} from "../domain/nutrition";
+import {calculateAverageForWeek} from "../usecases/weekly_calculations";
 import {Payload} from "recharts/types/component/DefaultTooltipContent";
 
 interface ChartPoint {
@@ -25,7 +25,7 @@ interface Props {
   targetLossRates?: number[];
 }
 
-const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
+const WeightChart: React.FC<Props> = ({weeks, targetLossRates = []}) => {
   const flatData: ChartPoint[] = weeks.flatMap((week, weekIndex) =>
     week.days.map((day, i) => ({
       name: `W${week.weekNum}-D${i + 1}`,
@@ -36,14 +36,14 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
   );
 
   const dataWithAvg: ChartPoint[] = flatData.map((p, i, arr) => {
-    if (p.weight === null) return { ...p };
+    if (p.weight === null) return {...p};
     const slice = arr.slice(Math.max(0, i - 6), i + 1);
     const weights = slice.map(d => d.weight).filter(w => w !== null);
     const avg = weights.length ? +(weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1) : undefined;
-    return { ...p, average: avg };
+    return {...p, average: avg};
   });
 
-  let dataWithTargets: ChartPoint[] = dataWithAvg.map(p => ({ ...p, targetWeights: {} }));
+  let dataWithTargets: ChartPoint[] = dataWithAvg.map(p => ({...p, targetWeights: {}}));
 
   if (targetLossRates.length > 0) {
     dataWithTargets = dataWithAvg.map((p) => {
@@ -69,7 +69,7 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
           +(startWeightAvg - ((diffDaysSinceWeekStart + 3.5) * dailyRate)).toFixed(1);
       });
 
-      return { ...p, ...newTargetWeights };
+      return {...p, ...newTargetWeights};
     });
   }
 
@@ -84,10 +84,10 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
   return (
     <div className="h-[300px]">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart data={dataWithTargets} margin={{ top: 5, right: 20, left: -25}}>
+        <LineChart data={dataWithTargets} margin={{top: 5, right: 20, left: -25}}>
           <XAxis
             dataKey="date"
-            tick={{ fontSize: 10, fill: "#a1a1aa" }}
+            tick={{fontSize: 10, fill: "#a1a1aa"}}
             dy={10}
             tickFormatter={(dateStr) =>
               new Date(dateStr).toLocaleDateString("en-US", {
@@ -98,15 +98,15 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
           />
           <YAxis
             domain={[minY, maxY]}
-            tick={{ fontSize: 12, fill: "#a1a1aa" }}
+            tick={{fontSize: 12, fill: "#a1a1aa"}}
             dx={-5}
             width={75}
             tickFormatter={(v) => `${v}kg`}
           />
           <Tooltip
-            contentStyle={{ backgroundColor: "#2a2a2a", borderRadius: "8px" }}
-            labelStyle={{ color: "#f4f4f5", fontWeight: "bold" }}
-            itemStyle={{ color: "#e4e4e7" }}
+            contentStyle={{backgroundColor: "#2a2a2a", borderRadius: "8px"}}
+            labelStyle={{color: "#f4f4f5", fontWeight: "bold"}}
+            itemStyle={{color: "#e4e4e7"}}
             formatter={(value: number, name: string, entry: Payload<number, string>) => {
               if (name === "weight" && entry.payload.weight === null) return ["No data", "Weight"];
               let label = "Weight";
@@ -120,14 +120,14 @@ const WeightChart: React.FC<Props> = ({ weeks, targetLossRates = [] }) => {
             }}
             labelFormatter={(label: string, payload: Payload<number, string>[]) => {
               const date = payload[0]?.payload?.date;
-              return date ? new Date(date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : label;
+              return date ? new Date(date).toLocaleDateString("en-US", {weekday: "short", month: "short", day: "numeric"}) : label;
             }}
           />
           <Line
             dataKey="weight"
             stroke="#38bdf8"
             strokeWidth={0}
-            dot={({ cx, cy, payload }) =>
+            dot={({cx, cy, payload}) =>
               payload.weight !== null ? <Dot key={`dot-${payload.name}`} cx={cx} cy={cy} r={4} fill="#38bdf8" /> : <g key={`g-${payload.name}`} />
             }
             connectNulls={false}

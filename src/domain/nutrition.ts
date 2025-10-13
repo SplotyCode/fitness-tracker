@@ -1,4 +1,13 @@
-import {Level} from "../utils/nutrition";
+export enum NutritionColor {
+  RED = "red",
+  YELLOW = "yellow",
+  GREEN = "green",
+}
+
+export interface Level {
+  value: number;
+  color: NutritionColor;
+}
 
 export interface DayData {
   date: string;
@@ -21,7 +30,7 @@ export interface DayUpdateData {
 }
 
 export interface NutritionGoals {
-  validFrom: string;
+  validFrom: string; // ISO date string
   kcalLevels: Level[];
   proteinLevels: Level[];
   fatLevels: Level[];

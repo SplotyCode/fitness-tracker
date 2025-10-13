@@ -1,7 +1,7 @@
-import { JSX } from "react";
+import {JSX} from "react";
 import {SyncStatus} from "../hooks/useSyncStatus";
 
-const SyncBadge = ({ state }: { state: SyncStatus }): JSX.Element | null => {
+const SyncBadge = ({state}: { state: SyncStatus }): JSX.Element | null => {
   if (state === 'synced') {
     return null;
   }

@@ -1,11 +1,10 @@
 import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
-import { FaArrowLeft, FaPlus, FaSave, FaTrashAlt } from "react-icons/fa";
-import { NutritionGoals } from "./types";
-import {Level, NutritionColor} from "../utils/nutrition";
-import ProgressBar from "./ProgressBar"; // adjust path!
+import {FaArrowLeft, FaPlus, FaSave, FaTrashAlt} from "react-icons/fa";
+import {NutritionGoals} from "../domain/nutrition";
+import {Level, NutritionColor} from "../domain/nutrition";
+import ProgressBar from "./ProgressBar";
 
 interface GoalsModalProps {
-    open: boolean;
     onClose: () => void;
     goals: NutritionGoals[];
     onChange: (goals: NutritionGoals[]) => void;
@@ -13,7 +12,7 @@ interface GoalsModalProps {
 
 type ViewMode = "list" | "edit";
 
-const emptyLevel: Level = { value: 0, color: NutritionColor.GREEN };
+const emptyLevel: Level = {value: 0, color: NutritionColor.GREEN};
 const sortGoals = (a: NutritionGoals[], asc = true): NutritionGoals[] =>
   [...a].sort((x, y) =>
     asc
@@ -21,7 +20,7 @@ const sortGoals = (a: NutritionGoals[], asc = true): NutritionGoals[] =>
       : new Date(y.validFrom).getTime() - new Date(x.validFrom).getTime()
   );
 
-const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange }) => {
+const GoalsModal: React.FC<GoalsModalProps> = ({onClose, goals, onChange}) => {
   const [mode, setMode] = useState<ViewMode>("list");
   const [editing, setEditing] = useState<NutritionGoals | null>(null);
 
@@ -33,9 +32,9 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
   useEffect(() => {
     if (mode === "edit") {
       setValidFrom(editing?.validFrom ?? new Date().toISOString().slice(0, 16));
-      setKcalLevels(editing?.kcalLevels ?? [{ ...emptyLevel }]);
-      setProteinLevels(editing?.proteinLevels ?? [{ ...emptyLevel }]);
-      setFatLevels(editing?.fatLevels ?? [{ ...emptyLevel }]);
+      setKcalLevels(editing?.kcalLevels ?? [{...emptyLevel}]);
+      setProteinLevels(editing?.proteinLevels ?? [{...emptyLevel}]);
+      setFatLevels(editing?.fatLevels ?? [{...emptyLevel}]);
     }
   }, [mode, editing]);
 
@@ -44,10 +43,10 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
       k === "kcalLevels" ? setKcalLevels : k === "proteinLevels" ? setProteinLevels : setFatLevels;
 
     const updateLevel = (macro: MacroKey, idx: number, part: Partial<Level>): void => {
-      getSetter(macro)((prev) => prev.map((l, i) => (i === idx ? { ...l, ...part } : l)));
+      getSetter(macro)((prev) => prev.map((l, i) => (i === idx ? {...l, ...part} : l)));
     };
     const addLevel = (macro: MacroKey): void => {
-      getSetter(macro)((prev) => [...prev, { ...emptyLevel }]);
+      getSetter(macro)((prev) => [...prev, {...emptyLevel}]);
     };
     const removeLevel = (macro: MacroKey, idx: number): void => {
       getSetter(macro)((prev) => prev.filter((_, i) => i !== idx));
@@ -78,8 +77,6 @@ const GoalsModal: React.FC<GoalsModalProps> = ({ open, onClose, goals, onChange 
         onChange(goals.filter((g) => g !== goal));
       }
     };
-
-    if (!open) return null;
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
@@ -243,7 +240,7 @@ interface LevelsSectionProps {
 
 type MacroKey = "kcalLevels" | "proteinLevels" | "fatLevels";
 
-const LevelsSection: React.FC<LevelsSectionProps> = ({ title, levels, macroKey, onAdd, onRemove, onChange }) => (
+const LevelsSection: React.FC<LevelsSectionProps> = ({title, levels, macroKey, onAdd, onRemove, onChange}) => (
   <section className="mb-6">
     <div className="mb-4 flex items-center justify-between">
       <h3 className="text-lg font-medium">{title}</h3>
@@ -260,12 +257,12 @@ const LevelsSection: React.FC<LevelsSectionProps> = ({ title, levels, macroKey, 
           <input
             type="number"
             value={lvl.value}
-            onChange={(e) => onChange(macroKey, idx, { value: parseFloat(e.target.value) })}
+            onChange={(e) => onChange(macroKey, idx, {value: parseFloat(e.target.value)})}
             className="w-full rounded-md border border-white/20 bg-zinc-800/50 p-2 text-right focus:border-indigo-400 focus:outline-none"
           />
           <select
             value={lvl.color}
-            onChange={(e) => onChange(macroKey, idx, { color: e.target.value as NutritionColor })}
+            onChange={(e) => onChange(macroKey, idx, {color: e.target.value as NutritionColor})}
             className="rounded-md border border-white/20 bg-zinc-800/50 p-2 focus:border-indigo-400 focus:outline-none"
           >
             {Object.values(NutritionColor).map((col) => (

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, JSX} from "react";
-import { FaWeight, FaFire, FaDrumstickBite, FaOilCan, FaSave, FaTimes } from "react-icons/fa";
+import {FaWeight, FaFire, FaDrumstickBite, FaOilCan, FaSave, FaTimes} from "react-icons/fa";
 
-import {DayData, DayUpdateData} from "../types";
+import {DayData, DayUpdateData} from "../../domain/nutrition";
 
 interface EditEntryFormProps {
   entryData: DayData;

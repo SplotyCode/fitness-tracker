@@ -1,80 +1,63 @@
 "use client";
 
 import React, {useCallback, useEffect, useState} from "react";
-import {db} from "../firebase";
-import {doc, onSnapshot, setDoc, collection} from "firebase/firestore";
 import {FaSpinner} from "react-icons/fa";
+import {Timestamp} from "firebase/firestore";
 
-import {DayData, DayUpdateData, NutritionGoals, WeekData} from "./types";
-import {fillAndGroupDays} from "../utils/weekly_calculations";
+import {DayUpdateData, NutritionGoals, WeekData} from "../domain/nutrition";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
-import {getDefaultNutritionGoal} from "../utils/nutrition";
 import GoalsModal from "./GoalsModal";
 import WeekList from "./Weekly/WeekList";
 import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
+import TrainingModal from "./Training/TrainingModal";
+import {Training} from "../domain/training";
+import {subscribeWeeklyData, saveDayData as ucSaveDayData} from "../usecases/weekly_data";
+import {subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals} from "../usecases/profile_subscriptions";
+import {subscribeTrainings, groupTrainingsByDay} from "../usecases/training/trainings_feed";
+import {newTrainingId, saveTraining} from "../repositories/trainings";
 
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
+  const [trainings, setTrainings] = useState<{ id: string; data: Training }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { syncStatus, registerPendingWrites, clearPendingWrites } = useSyncStatus();
+  const {syncStatus, registerPendingWrites, clearPendingWrites} = useSyncStatus();
   const {user, isLoading: authLoading, handleSignIn, handleSignOut} = useAuth();
 
   useEffect(() => {
     if (!user) {
       setWeeklyData([]);
       setNutritionGoals([]);
+      setTrainings([]);
       return;
     }
 
     setIsLoading(true);
     clearPendingWrites();
 
-    console.log("User signed in:", user.uid);
-    const daysCollectionRef = collection(db, "users", user.uid, "days");
-    const unsubscribeDays = onSnapshot(daysCollectionRef, { includeMetadataChanges: true }, (querySnapshot) => {
-      registerPendingWrites('days', querySnapshot.metadata.hasPendingWrites);
-      const daysFromFirestore = querySnapshot.docs.map(doc => ({
-        ...(doc.data() as Omit<DayData, 'date'>),
-        date: new Date(doc.id).toISOString(),
-      }));
-      setWeeklyData(fillAndGroupDays(daysFromFirestore));
-      console.log("Day data updated from Firestore snapshot.");
+    const unsubscribeDays = subscribeWeeklyData(user.uid, (weeks) => {
+      setWeeklyData(weeks);
       setIsLoading(false);
-    }, (error) => {
-      console.error("Error listening to days collection:", error);
-      setIsLoading(false);
-    });
+    }, {onPendingWrites: registerPendingWrites});
 
-    const profileDocRef = doc(db, "users", user.uid, "profile", "userProfile");
-    const unsubscribeGoals = onSnapshot(profileDocRef, { includeMetadataChanges: true }, (docSnap) => {
-      registerPendingWrites('profile', docSnap.metadata.hasPendingWrites);
-      if (docSnap.exists()) {
-        const goals = docSnap.data().nutritionGoals as NutritionGoals[] | null;
-        if (goals && goals.length > 0) {
-          setNutritionGoals(goals);
-        } else {
-          const defaultGoals = [getDefaultNutritionGoal()];
-          setNutritionGoals(defaultGoals);
-          setDoc(profileDocRef, { nutritionGoals: defaultGoals }, { merge: true });
-        }
-      } else {
-        console.log("No profile data, initializing with default goals.");
-        const defaultGoals = [getDefaultNutritionGoal()];
-        setNutritionGoals(defaultGoals);
-        setDoc(profileDocRef, { nutritionGoals: defaultGoals });
-      }
-    }, (error) => {
-      console.error("Error listening to profile document:", error);
-    });
+    const unsubscribeGoals = subscribeNutritionGoalsOrInit(user.uid, (goals) => {
+      setNutritionGoals(goals);
+    }, {onPendingWrites: registerPendingWrites});
+
+    const unsubscribeTrainings = subscribeTrainings(user.uid, (arr) => {
+      console.log("Trainings updated", arr);
+      const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
+      setTrainings(sorted);
+    }, {onPendingWrites: registerPendingWrites});
 
     return () => {
       unsubscribeDays();
       unsubscribeGoals();
+      unsubscribeTrainings();
     };
   }, [user, clearPendingWrites, registerPendingWrites]);
 
@@ -83,21 +66,17 @@ const WeightTracker: React.FC = () => {
       console.error("Cannot save data: no user logged in.");
       return;
     }
-
-    const docId = new Date(date).toISOString().split('T')[0];
-    const dayDocRef = doc(db, "users", user.uid, "days", docId);
     try {
-      await setDoc(dayDocRef, updatedDay, { merge: true });
+      await ucSaveDayData(user.uid, date, updatedDay);
     } catch (error) {
-      console.error("Error saving data to Firestore:", error);
+      console.error("Error saving data:", error);
     }
   }, [user]);
 
   const handleSaveNutritionGoals = useCallback(async (newGoals: NutritionGoals[]) => {
     if (!user) return;
-    const userDocRef = doc(db, "users", user.uid, "profile", "userProfile");
     try {
-      await setDoc(userDocRef, { nutritionGoals: newGoals }, { merge: true });
+      await ucSaveNutritionGoals(user.uid, newGoals);
     } catch (err) {
       console.error("Error saving nutrition goals:", err);
     }
@@ -105,6 +84,37 @@ const WeightTracker: React.FC = () => {
   [user]
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
+  const [editingTraining, setEditingTraining] = useState<{ id: string; data: Training } | null>(null);
+
+  const handleOpenNewTraining = async (): Promise<void> => {
+    if (!user) return;
+    const id = newTrainingId(user.uid);
+    const isoDay = new Date().toISOString().split("T")[0];
+    const data = {
+      day: isoDay,
+      startedAt: Timestamp.now(),
+      endedAt: null,
+    } as Training;
+    try {
+      console.log("Creating training", id, data);
+      await saveTraining(user.uid, id, data);
+      console.log("Training created", id, data);
+      setEditingTraining({id, data});
+    } catch (e) {
+      console.error("Failed to create training", e);
+    }
+  };
+
+  const trainingsByDay = React.useMemo(() => {
+    return groupTrainingsByDay(trainings);
+  }, [trainings]);
+
+  const handleOpenTrainingById = (trainingId: string): void => {
+    const found = trainings.find(t => t.id === trainingId);
+    if (found) {
+      setEditingTraining(found);
+    }
+  };
 
   if (authLoading || isLoading) {
     return (
@@ -129,18 +139,34 @@ const WeightTracker: React.FC = () => {
             user={user}
             syncStatus={syncStatus}
             onShowGoals={() => setShowGoalsModal(true)}
+            onAddTraining={handleOpenNewTraining}
             onSignOut={handleSignOut}
           />
           <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
         </section>
-        <WeekList weeks={weeklyData} onSaveDay={handleSaveDayData} goals={nutritionGoals} />
+        <WeekList
+          weeks={weeklyData}
+          onSaveDay={handleSaveDayData}
+          goals={nutritionGoals}
+          trainingsByDay={trainingsByDay}
+          onOpenTrainingById={handleOpenTrainingById}
+        />
       </div>
-      <GoalsModal
-        open={showGoalsModal}
-        onClose={() => setShowGoalsModal(false)}
-        goals={nutritionGoals}
-        onChange={handleSaveNutritionGoals}
-      />
+      {showGoalsModal && (
+        <GoalsModal
+          onClose={() => setShowGoalsModal(false)}
+          goals={nutritionGoals}
+          onChange={handleSaveNutritionGoals}
+        />
+      )}
+      {editingTraining && (
+        <TrainingModal
+          userId={user.uid}
+          training={editingTraining}
+          onClose={() => setEditingTraining(null)}
+          trainings={trainings}
+        />
+      )}
     </main>
   );
 };
