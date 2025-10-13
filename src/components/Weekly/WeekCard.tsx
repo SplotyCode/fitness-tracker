@@ -30,10 +30,25 @@ const WeekCard = ({
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
-  const trainingsCountThisWeek = week.days.reduce((acc, day) => {
-    const key = day.date.split('T')[0];
-    return acc + (trainingsByDay[key]?.length ?? 0);
-  }, 0);
+  const trainingStats = week.days.reduce(
+    (acc, day) => {
+      const key = day.date.split('T')[0];
+      for (const training of trainingsByDay[key] ?? []) {
+        const type = training.data.type;
+        if (type === "cardio") {
+          acc.cardio += 1;
+          const kcal = training.data.kcalBurnt;
+          if (kcal != null) {
+            acc.cardioKcal += kcal;
+          }
+        } else if (type === "strength") {
+          acc.strength += 1;
+        }
+      }
+      return acc;
+    },
+    {strength: 0, cardio: 0, cardioKcal: 0}
+  );
 
   const weightDiff =
     currentWeekAvgWeight !== null && lastWeekAvgWeight !== null
@@ -57,7 +72,10 @@ const WeekCard = ({
             {weeklyProteinAvg !== null ? Math.round(weeklyProteinAvg) : "-"}g P / {" "}
             {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
             {" "}
-            • Trainings: {trainingsCountThisWeek}/4
+            • Trainings: {trainingStats.strength}/4
+            {" "}
+            • Cardio: {trainingStats.cardio}
+            {trainingStats.cardioKcal > 0 ? ` (${trainingStats.cardioKcal} kcal)` : ""}
           </p>
         </div>
         <div className="flex items-center gap-4">

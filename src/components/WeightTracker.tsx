@@ -94,6 +94,7 @@ const WeightTracker: React.FC = () => {
       day: isoDay,
       startedAt: Timestamp.now(),
       endedAt: null,
+      type: "strength",
     } as Training;
     try {
       console.log("Creating training", id, data);
@@ -111,7 +112,7 @@ const WeightTracker: React.FC = () => {
 
   const handleOpenTrainingById = (trainingId: string): void => {
     const found = trainings.find(t => t.id === trainingId);
-    if (found) {
+    if (found && found.data.type === "strength") {
       setEditingTraining(found);
     }
   };
