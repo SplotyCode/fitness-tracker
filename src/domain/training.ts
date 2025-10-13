@@ -31,10 +31,14 @@ const EXERCISE_BY_ID: Record<ExerciseId, (typeof EXERCISES)[number]> =
     Object.fromEntries(EXERCISES.map(e => [e.id, e])) as Record<ExerciseId, (typeof EXERCISES)[number]>;
 export const getExercise = (id: ExerciseId): Exercise => EXERCISE_BY_ID[id];
 
+export type TrainingType = "strength" | "cardio";
+
 export interface Training {
   day: string; // ISO date (YYYY-MM-DD)
   startedAt: Timestamp;
-  endedAt?: Timestamp | null;
+  endedAt: Timestamp | null;
+  type: TrainingType;
+  kcalBurnt: number | null;
 }
 
 interface TrainingSetBase {

@@ -11,9 +11,7 @@ interface Props {
     isOpen: boolean;
     onToggle: () => void;
     setsToday: { id: string; data: TrainingSet }[];
-    onAddSet: <T extends TrainingSet>(
-      payload: Omit<T, "pauseSec" | "trainingId">
-    ) => Promise<void>;
+    onAddSet: <T extends TrainingSet>(payload: Omit<T, "pauseSec" | "trainingId">) => Promise<void>;
     onUpdateSet: (setId: string, data: Partial<TrainingSet>) => Promise<void>;
     onDeleteSet: (setId: string) => Promise<void>;
     loadProgress: () => Promise<ProgressMatrix>;

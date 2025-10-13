@@ -9,8 +9,8 @@ interface Props {
   weeks: WeekData[];
   onSaveDay: (date: string, data: DayUpdateData) => void;
   goals: NutritionGoals[];
-  trainingsByDay?: Record<string, { id: string; data: Training }[]>;
-  onOpenTrainingById?: (trainingId: string) => void;
+  trainingsByDay: Record<string, { id: string; data: Training }[]>;
+  onOpenTrainingById: (trainingId: string) => void;
 }
 
 const WeekList = ({weeks, onSaveDay, goals, trainingsByDay = {}, onOpenTrainingById}: Props): JSX.Element  => {

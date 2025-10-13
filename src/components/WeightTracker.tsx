@@ -13,6 +13,7 @@ import Header from "./Header";
 import useSyncStatus from "../hooks/useSyncStatus";
 import {useAuth} from "../hooks/useAuth";
 import TrainingModal from "./Training/TrainingModal";
+import CardioModal from "./Training/CardioModal";
 import {Training} from "../domain/training";
 import {subscribeWeeklyData, saveDayData as ucSaveDayData} from "../usecases/weekly_data";
 import {subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals} from "../usecases/profile_subscriptions";
@@ -84,7 +85,8 @@ const WeightTracker: React.FC = () => {
   [user]
   );
   const [showGoalsModal, setShowGoalsModal] = useState(false);
-  const [editingTraining, setEditingTraining] = useState<{ id: string; data: Training } | null>(null);
+  const [editingTraining, setEditingTraining] = useState<string | null>(null);
+  const [editingCardio, setEditingCardio] = useState<{ id: string; data: Training } | true | null>(null);
 
   const handleOpenNewTraining = async (): Promise<void> => {
     if (!user) return;
@@ -94,12 +96,14 @@ const WeightTracker: React.FC = () => {
       day: isoDay,
       startedAt: Timestamp.now(),
       endedAt: null,
+      type: "strength",
+      kcalBurnt: null,
     } as Training;
     try {
       console.log("Creating training", id, data);
       await saveTraining(user.uid, id, data);
       console.log("Training created", id, data);
-      setEditingTraining({id, data});
+      setEditingTraining(id);
     } catch (e) {
       console.error("Failed to create training", e);
     }
@@ -111,8 +115,11 @@ const WeightTracker: React.FC = () => {
 
   const handleOpenTrainingById = (trainingId: string): void => {
     const found = trainings.find(t => t.id === trainingId);
-    if (found) {
-      setEditingTraining(found);
+    if (!found) return;
+    if (found.data.type === "strength") {
+      setEditingTraining(found.id);
+    } else {
+      setEditingCardio(found);
     }
   };
 
@@ -140,6 +147,7 @@ const WeightTracker: React.FC = () => {
             syncStatus={syncStatus}
             onShowGoals={() => setShowGoalsModal(true)}
             onAddTraining={handleOpenNewTraining}
+            onAddCardio={() => setEditingCardio(true)}
             onSignOut={handleSignOut}
           />
           <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
@@ -162,9 +170,16 @@ const WeightTracker: React.FC = () => {
       {editingTraining && (
         <TrainingModal
           userId={user.uid}
-          training={editingTraining}
+          trainingId={editingTraining}
           onClose={() => setEditingTraining(null)}
           trainings={trainings}
+        />
+      )}
+      {editingCardio && (
+        <CardioModal
+          userId={user.uid}
+          training={editingCardio === true ? null : editingCardio}
+          onClose={() => setEditingCardio(null)}
         />
       )}
     </main>

@@ -4,7 +4,7 @@ import {FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp} from "react-icons/fa
 import {DayUpdateData, NutritionGoals, WeekData} from "../../domain/nutrition";
 import {Training} from "../../domain/training";
 import DayCard from "./DayCard";
-import {calculateAverageForWeek} from "../../usecases/weekly_calculations";
+import {calculateAverageForWeek, calculateTrainingStatsForWeek} from "../../usecases/weekly_calculations";
 
 interface WeekCardProps {
   week: WeekData;
@@ -30,10 +30,7 @@ const WeekCard = ({
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
-  const trainingsCountThisWeek = week.days.reduce((acc, day) => {
-    const key = day.date.split('T')[0];
-    return acc + (trainingsByDay[key]?.length ?? 0);
-  }, 0);
+  const trainingStats = calculateTrainingStatsForWeek(week, trainingsByDay);
 
   const weightDiff =
     currentWeekAvgWeight !== null && lastWeekAvgWeight !== null
@@ -57,7 +54,17 @@ const WeekCard = ({
             {weeklyProteinAvg !== null ? Math.round(weeklyProteinAvg) : "-"}g P / {" "}
             {weeklyFatAvg !== null ? Math.round(weeklyFatAvg) : "-"}g F
             {" "}
-            • Trainings: {trainingsCountThisWeek}/4
+            • Trainings: {trainingStats.strength}/4
+            {" "}
+            • Cardio: {trainingStats.cardio}
+            {trainingStats.cardioKcal > 0 || trainingStats.cardioMin > 0
+              ? ` (${[
+                trainingStats.cardioKcal > 0 ? `${trainingStats.cardioKcal} kcal` : null,
+                trainingStats.cardioMin > 0 ? `${trainingStats.cardioMin} min` : null,
+              ]
+                .filter(Boolean)
+                .join(", ")})`
+              : ""}
           </p>
         </div>
         <div className="flex items-center gap-4">

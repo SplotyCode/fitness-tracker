@@ -22,7 +22,7 @@ const Login: React.FC<LoginProps> = ({onSignIn}) => {
   return (
     <main className="p-8 min-h-screen text-white bg-neutral-900 flex justify-center items-center">
       <div className="p-8 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10 text-center max-w-md w-full">
-        <h1 className="text-3xl font-bold mb-6">Welcome to Weight Tracker</h1>
+        <h1 className="text-3xl font-bold mb-6">Welcome to Fitniss Tracker</h1>
         <p className="text-neutral-400 mb-8">Please sign in to continue</p>
         {error && (
           <div className="p-4 mb-4 text-sm text-red-300 bg-red-800 bg-opacity-30 rounded-lg" role="alert">

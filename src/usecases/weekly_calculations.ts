@@ -1,4 +1,5 @@
 import {WeekData, DayData} from "../domain/nutrition";
+import {Training} from "../domain/training";
 
 export const calculateAverageForWeek = (
   week: WeekData,
@@ -10,6 +11,41 @@ export const calculateAverageForWeek = (
   }
   const total = validDays.reduce((sum, day) => sum + (day[key] ?? 0), 0);
   return total / validDays.length;
+};
+
+export interface TrainingStats {
+  strength: number;
+  cardio: number;
+  cardioKcal: number;
+  cardioMin: number;
+}
+
+export const calculateTrainingStatsForWeek = (
+  week: WeekData,
+  trainingsByDay: Partial<Record<string, { id: string; data: Training }[]>> = {}
+): TrainingStats => {
+  return week.days.reduce<TrainingStats>((acc, day) => {
+    const key = day.date.split('T')[0];
+    for (const training of trainingsByDay[key] ?? []) {
+      const type = training.data.type;
+      if (type === "cardio") {
+        acc.cardio += 1;
+        const kcal = training.data.kcalBurnt;
+        if (kcal != null) {
+          acc.cardioKcal += kcal;
+        }
+        const startedAt = training.data.startedAt;
+        const endedAt = training.data.endedAt;
+        if (endedAt) {
+          const minutes = Math.max(0, Math.round((endedAt.toMillis() - startedAt.toMillis()) / 60000));
+          acc.cardioMin += minutes;
+        }
+      } else {
+        acc.strength += 1;
+      }
+    }
+    return acc;
+  }, {strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0});
 };
 
 export const getMonday = (d: Date): Date => {
