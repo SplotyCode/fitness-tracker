@@ -1,7 +1,8 @@
 import {JSX, useEffect, useState} from "react";
-import {ExerciseId, TrainingSet} from "../../domain/training";
+import {BilateralSet, ExerciseId, TrainingSet, UnilateralSet} from "../../domain/training";
 import {FaEdit, FaSave, FaTrashAlt, FaTimes} from "react-icons/fa";
 import QuickInputs from "./QuickInputs";
+import {Timestamp} from "firebase/firestore";
 
 const SetsTable = ({
   setsToday, unilateral, onUpdateSet, onDeleteSet, exerciseId, onAddSet, loadLastDefaults
@@ -11,10 +12,8 @@ const SetsTable = ({
     onUpdateSet: (setId: string, data: Partial<TrainingSet>) => Promise<void>;
     onDeleteSet: (setId: string) => Promise<void>;
     exerciseId: ExerciseId;
-    onAddSet: (
-      payload:
-        | { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }
-        | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
+    onAddSet: <T extends TrainingSet>(
+      payload: Omit<T, "pauseSec" | "trainingId">
     ) => Promise<void>;
     loadLastDefaults: () => Promise<
       | { mode: "bilateral"; weightKg: number; reps: number }
@@ -64,21 +63,29 @@ const SetsTable = ({
   }, [loadLastDefaults, unilateral]);
 
   const saveNew = async (): Promise<void> => {
+    const rpe = 2;
+    const setIndex = setsToday.length;
     if (unilateral) {
-      await onAddSet({
+      await onAddSet<UnilateralSet>({
         mode: "unilateral",
         exerciseId,
         weightLeftKg: newUni.weightLeftKg,
         weightRightKg: newUni.weightRightKg,
         repsLeft: newUni.repsLeft,
         repsRight: newUni.repsRight,
+        rpe: rpe,
+        setIndex,
+        performedAt: Timestamp.now()
       });
     } else {
-      await onAddSet({
+      await onAddSet<BilateralSet>({
         mode: "bilateral",
         exerciseId,
         weightKg: newBilat.weightKg,
         reps: newBilat.reps,
+        rpe: rpe,
+        setIndex,
+        performedAt: Timestamp.now()
       });
     }
   };

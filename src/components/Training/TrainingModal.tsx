@@ -1,7 +1,13 @@
 import {JSX, useEffect, useMemo, useState} from "react";
-import {EXERCISES, ExerciseId, TrainingSet, Training, getExercise} from "../../domain/training";
-import {subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDeleteSet} from "../../repositories/trainings";
-import {addTrainingSet, endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining} from "../../usecases/training/training_session";
+import {
+  EXERCISES,
+  ExerciseId,
+  TrainingSet,
+  Training,
+  getExercise,
+} from "../../domain/training";
+import {subscribeTrainingSets, updateSet as repoUpdateSet, deleteSet as repoDeleteSet, addSet as repoAddSet} from "../../repositories/trainings";
+import {endSession, deleteSession, buildProgressMatrix, getLastExerciseDefaultsFromPreviousTraining} from "../../usecases/training/training_session";
 import ExerciseCard from "./ExerciseCard";
 import RestTimerPill from "./RestTimerPill";
 import {FaFlagCheckered, FaTrashAlt} from "react-icons/fa";
@@ -30,11 +36,8 @@ const TrainingModal = ({
   }, [userId, trainingId]);
 
   const actions = useMemo(() => ({
-    add: (
-      p:
-        | { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }
-        | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
-    ) => addTrainingSet({userId, trainingId, ...p}),
+    add: (set: TrainingSet) =>
+      repoAddSet(userId, trainingId, set),
     updateSet: (setId: string, data: Partial<TrainingSet>) =>
       repoUpdateSet(userId, trainingId, setId, data),
     deleteSet: (setId: string) => repoDeleteSet(userId, trainingId, setId),
@@ -65,13 +68,16 @@ const TrainingModal = ({
     setAddedExerciseIds(prev => Array.from(new Set<ExerciseId>([...prev, ...existing])));
   }, [setsByExercise]);
 
-  const handleAddSet = async (
-    payload:
-      | { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number }
-      | { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number }
+  const handleAddSet = async <T extends TrainingSet>(
+    payload: Omit<T, "pauseSec" | "trainingId">
   ): Promise<void> => {
-    await add(payload);
-    setLastSaved({exerciseId: payload.exerciseId, at: Date.now()});
+    const now = Date.now();
+    const pauseSec = lastSaved && lastSaved.exerciseId === payload.exerciseId
+      ? Math.max(0, Math.round((now - lastSaved.at) / 1000))
+      : 0;
+    const set = {...payload, pauseSec} as T;
+    await add(set);
+    setLastSaved({exerciseId: payload.exerciseId, at: now});
   };
 
   const handleEnd = async (): Promise<void> => { await end(); onClose(); };

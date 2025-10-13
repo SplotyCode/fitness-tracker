@@ -14,7 +14,7 @@ interface DayCardProps {
   day: DayData;
   onSaveDay: (date: string, updatedDayData: DayUpdateData) => void;
   nutritionGoals: NutritionGoals;
-  trainings: { id: string; data: Training }[];
+  trainings?: { id: string; data: Training }[];
   onOpenTrainingById?: (trainingId: string) => void;
 }
 

@@ -12,7 +12,7 @@ interface WeekCardProps {
   lastWeekAvgWeight: number | null;
   initialIsOpen: boolean;
   nutritionGoals: NutritionGoals;
-  trainingsByDay?: Record<string, { id: string; data: Training }[]>;
+  trainingsByDay?: Partial<Record<string, { id: string; data: Training }[]>>;
   onOpenTrainingById?: (trainingId: string) => void;
 }
 

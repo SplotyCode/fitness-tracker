@@ -1,16 +1,8 @@
 import {Timestamp} from "firebase/firestore";
 import {
-  ExerciseId, Training, TrainingSet, BilateralSet, UnilateralSet, getExercise,
+  ExerciseId, Training, TrainingSet, getExercise,
 } from "../../domain/training";
-import {addSet, deleteTraining, saveTraining, subscribeTrainingSets} from "../../repositories/trainings";
-
-export type AddSetPayload = {
-  userId: string;
-  trainingId: string;
-} & (
-  { mode: "bilateral"; exerciseId: ExerciseId; weightKg: number; reps: number; rpe?: number; performedAt?: Timestamp } |
-  { mode: "unilateral"; exerciseId: ExerciseId; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number; rpe?: number; performedAt?: Timestamp }
-);
+import {deleteTraining, saveTraining, subscribeTrainingSets} from "../../repositories/trainings";
 
 export interface ProgressCell {
     weight: number | null;
@@ -24,47 +16,6 @@ export interface ProgressMatrix {
     sessions: { trainingId: string; date: string }[];   // columns (most recent first)
     rows: { label: string; setIndex: number; side?: "L" | "R" }[]; // rows
     cells: (ProgressCell | null)[][]; // [row][col]
-}
-
-export async function addTrainingSet(params: AddSetPayload): Promise<{ id: string; data: TrainingSet }> {
-  const {
-    userId, trainingId, exerciseId,
-  } = params;
-
-  let currentSets: { id: string; data: TrainingSet }[] = [];
-  await new Promise<void>((resolve, reject) => {
-    const unsub = subscribeTrainingSets(
-      userId, trainingId,
-      (arr) => { currentSets = arr; unsub(); resolve(); },
-      reject
-    );
-  });
-  const setIndex = currentSets.filter(s => s.data.exerciseId === exerciseId).length;
-
-  const performedAt: Timestamp = (params).performedAt ?? Timestamp.now();
-  const rpe: number = (params).rpe ?? 0;
-  const restSec = 30;
-
-  if (params.mode === "bilateral") {
-    const {weightKg, reps} = params;
-    const data: BilateralSet = {
-      trainingId, exerciseId, mode: "bilateral",
-      weightKg, reps,
-      rpe,
-      pauseSec: restSec,
-      setIndex, performedAt,
-    };
-    return addSet(userId, trainingId, data);
-  } else {
-    const {weightLeftKg, weightRightKg, repsLeft, repsRight} = params;
-    const data: UnilateralSet = {
-      trainingId, exerciseId, mode: "unilateral",
-      weightLeftKg, weightRightKg, repsLeft, repsRight,
-      rpe, pauseSec: restSec,
-      setIndex, performedAt,
-    };
-    return addSet(userId, trainingId, data);
-  }
 }
 
 export async function endSession(
