@@ -4,7 +4,7 @@ import {FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp} from "react-icons/fa
 import {DayUpdateData, NutritionGoals, WeekData} from "../../domain/nutrition";
 import {Training} from "../../domain/training";
 import DayCard from "./DayCard";
-import {calculateAverageForWeek} from "../../usecases/weekly_calculations";
+import {calculateAverageForWeek, calculateTrainingStatsForWeek} from "../../usecases/weekly_calculations";
 
 interface WeekCardProps {
   week: WeekData;
@@ -30,31 +30,7 @@ const WeekCard = ({
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
   const currentWeekAvgWeight = calculateAverageForWeek(week, "weight");
-  const trainingStats = week.days.reduce(
-    (acc, day) => {
-      const key = day.date.split('T')[0];
-      for (const training of trainingsByDay[key] ?? []) {
-        const type = training.data.type;
-        if (type === "cardio") {
-          acc.cardio += 1;
-          const kcal = training.data.kcalBurnt;
-          if (kcal != null) {
-            acc.cardioKcal += kcal;
-          }
-          const startedAt = training.data.startedAt;
-          const endedAt = training.data.endedAt;
-          if (startedAt && endedAt) {
-            const minutes = Math.max(0, Math.round((endedAt.toMillis() - startedAt.toMillis()) / 60000));
-            acc.cardioMin += minutes;
-          }
-        } else {
-          acc.strength += 1;
-        }
-      }
-      return acc;
-    },
-    {strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0}
-  );
+  const trainingStats = calculateTrainingStatsForWeek(week, trainingsByDay);
 
   const weightDiff =
     currentWeekAvgWeight !== null && lastWeekAvgWeight !== null
