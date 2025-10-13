@@ -90,7 +90,7 @@ const TrainingModal = ({
             {lastSaved?.exerciseId && (
               <RestTimerPill
                 key={`${lastSaved.exerciseId}-${lastSaved.at}`}
-                seconds={30}
+                seconds={getExercise(lastSaved.exerciseId).restSec}
               />
             )}
             <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
