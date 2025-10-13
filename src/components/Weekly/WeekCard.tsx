@@ -41,13 +41,19 @@ const WeekCard = ({
           if (kcal != null) {
             acc.cardioKcal += kcal;
           }
+          const startedAt = training.data.startedAt;
+          const endedAt = training.data.endedAt;
+          if (startedAt && endedAt) {
+            const minutes = Math.max(0, Math.round((endedAt.toMillis() - startedAt.toMillis()) / 60000));
+            acc.cardioMin += minutes;
+          }
         } else {
           acc.strength += 1;
         }
       }
       return acc;
     },
-    {strength: 0, cardio: 0, cardioKcal: 0}
+    {strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0}
   );
 
   const weightDiff =
@@ -75,7 +81,14 @@ const WeekCard = ({
             • Trainings: {trainingStats.strength}/4
             {" "}
             • Cardio: {trainingStats.cardio}
-            {trainingStats.cardioKcal > 0 ? ` (${trainingStats.cardioKcal} kcal)` : ""}
+            {trainingStats.cardioKcal > 0 || trainingStats.cardioMin > 0
+              ? ` (${[
+                  trainingStats.cardioKcal > 0 ? `${trainingStats.cardioKcal} kcal` : null,
+                  trainingStats.cardioMin > 0 ? `${trainingStats.cardioMin} min` : null,
+                ]
+                  .filter(Boolean)
+                  .join(", ")})`
+              : ""}
           </p>
         </div>
         <div className="flex items-center gap-4">
