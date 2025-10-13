@@ -14,16 +14,14 @@ import {FaFlagCheckered, FaTrashAlt} from "react-icons/fa";
 
 interface Props {
     userId: string;
-    training: { id: string; data: Training };
+    trainingId: string;
     onClose: () => void;
     trainings: { id: string; data: Training }[];
 }
 
 const TrainingModal = ({
-  userId, training, onClose, trainings,
+  userId, trainingId, onClose, trainings,
 }: Props): JSX.Element | null => {
-  const trainingId = training.id;
-
   interface TrainingSetEntry { id: string; data: TrainingSet }
 
   const [sets, setSets] = useState<TrainingSetEntry[]>([]);
@@ -87,7 +85,7 @@ const TrainingModal = ({
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50">
       <div className="w-full sm:max-w-3xl max-h-[90vh] overflow-y-auto rounded-3xl p-6 bg-neutral-800 text-white border border-white/10">
         <header className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">Training – {training.data.day}</h3>
+          <h3 className="text-xl font-semibold">Training</h3>
           <div className="flex items-center gap-3">
             {lastSaved?.exerciseId && (
               <RestTimerPill
