@@ -12,7 +12,7 @@ jobs:
         with:
           cache: 'npm'
       - run: npm ci
-      - name: Run ESLint (SARIF)
+      - name: Run ESLint
         run: npm run lint-ci
       - name: Upload SARIF to GitHub
         uses: github/codeql-action/upload-sarif@v3

@@ -143,8 +143,8 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
       );
     });
     const exSets = sets
-        .map((s) => s.data)
-        .filter((s) => s.exerciseId === exerciseId);
+      .map((s) => s.data)
+      .filter((s) => s.exerciseId === exerciseId);
     if (exSets.length === 0) continue;
 
     exSets.sort((a: TrainingSet, b: TrainingSet) => {

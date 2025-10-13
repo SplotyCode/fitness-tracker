@@ -97,7 +97,7 @@ const DayCard = ({
                     onOpenTrainingById(t.id);
                   }}
                   className="flex w-full items-center justify-between rounded px-2 py-1 text-sm text-zinc-200 hover:bg-zinc-800"
-                  >
+                >
                   <span>
                     {t.data.type.charAt(0).toUpperCase() + t.data.type.slice(1)}
                     : {new Date(t.data.startedAt.toDate()).toLocaleTimeString()}

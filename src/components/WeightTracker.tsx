@@ -95,6 +95,7 @@ const WeightTracker: React.FC = () => {
       startedAt: Timestamp.now(),
       endedAt: null,
       type: "strength",
+      kcalBurnt: null,
     } as Training;
     try {
       console.log("Creating training", id, data);

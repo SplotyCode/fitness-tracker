@@ -41,7 +41,7 @@ const WeekCard = ({
           if (kcal != null) {
             acc.cardioKcal += kcal;
           }
-        } else if (type === "strength") {
+        } else {
           acc.strength += 1;
         }
       }
