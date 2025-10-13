@@ -118,14 +118,9 @@ const WeightTracker: React.FC = () => {
     if (!found) return;
     if (found.data.type === "strength") {
       setEditingTraining(found.id);
-    } else if (found.data.type === "cardio") {
+    } else {
       setEditingCardio(found);
     }
-  };
-
-  const handleOpenNewCardio = async (): Promise<void> => {
-    if (!user) return;
-    setEditingCardio(true);
   };
 
   if (authLoading || isLoading) {
@@ -152,7 +147,7 @@ const WeightTracker: React.FC = () => {
             syncStatus={syncStatus}
             onShowGoals={() => setShowGoalsModal(true)}
             onAddTraining={handleOpenNewTraining}
-            onAddCardio={handleOpenNewCardio}
+            onAddCardio={() => setEditingCardio(true)}
             onSignOut={handleSignOut}
           />
           <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>

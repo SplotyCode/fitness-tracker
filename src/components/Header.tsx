@@ -4,7 +4,7 @@ import SyncBadge from "./SyncBadge";
 import {FaBullseye, FaPlus, FaSignOutAlt, FaHeartbeat} from "react-icons/fa";
 import React, {useState} from "react";
 import useIsMobile from "../hooks/useIsMobile";
-import AddTrainingMenuModal from "./Training/AddTrainingMenuModal";
+import AddMenuModal from "./AddMenuModal";
 
 interface WeightTrackerHeaderProps {
   user: User;
@@ -34,23 +34,25 @@ const Header: React.FC<WeightTrackerHeaderProps> = ({
   return (
     <header className="flex justify-between items-center mb-6">
       {isMobile ? (
-        <div className="flex items-center gap-4">
-          <button onClick={() => setShowAddMenu(true)} className={emeraldBtn}>
-            <FaPlus />
-          </button>
-          <h2 className="text-xl font-semibold">Fitniss tracker</h2>
-          <SyncBadge state={syncStatus} />
-          <button onClick={onShowGoals} className={indigoBtn}>
-            <FaBullseye />
-          </button>
-          <button onClick={onSignOut} className={redBtn}>
-            <FaSignOutAlt />
-          </button>
+        <div className="flex items-center w-full">
+          <div className="flex items-center gap-2">
+            <button onClick={() => setShowAddMenu(true)} className={emeraldBtn}>
+              <FaPlus />
+            </button>
+          </div>
+          <h2 className="flex-1 text-center text-2xl font-semibold">Fitniss Tracker</h2>
+          <div className="flex items-center gap-2">
+            <SyncBadge state={syncStatus} />
+            <button onClick={onSignOut} className={redBtn}>
+              <FaSignOutAlt />
+            </button>
+          </div>
           {showAddMenu && (
-            <AddTrainingMenuModal
+            <AddMenuModal
               onClose={() => setShowAddMenu(false)}
               onSelectStrength={onAddTraining}
               onSelectCardio={onAddCardio}
+              onSelectGoals={onShowGoals}
             />
           )}
         </div>
