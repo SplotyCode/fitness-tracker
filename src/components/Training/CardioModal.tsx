@@ -13,6 +13,16 @@ interface Props {
 
 const minutesFromMs = (ms: number): number => Math.max(0, Math.round(ms / 60000));
 
+const toLocalDatetimeInputValue = (date: Date): string => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  const mm = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const mi = pad(date.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+};
+
 const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
   const {id: trainingId, data} = training ?? {id: null, data: null};
   const isNew = trainingId === null;
@@ -27,9 +37,14 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
   const [kcal, setKcal] = useState(data?.kcalBurnt ?? 250);
   const [durationMin, setDurationMin] = useState(initialDurationMin || 40);
   const [note, setNote] = useState<string>(data?.note ?? "");
+  const [endAtInput, setEndAtInput] = useState<string>(
+    toLocalDatetimeInputValue(data?.endedAt ? data.endedAt.toDate() : new Date())
+  );
 
   const handleSave = async (): Promise<void> => {
-    const endAt = data?.endedAt ?? Timestamp.now();
+    const parsed = new Date(endAtInput);
+    const endDate = isNaN(parsed.getTime()) ? new Date() : parsed;
+    const endAt = Timestamp.fromDate(endDate);
     const startMs = endAt.toMillis() - durationMin * 60000;
     const payload: Partial<Training> = {
       day: data?.day ?? endAt.toDate().toISOString().split("T")[0],
@@ -74,6 +89,16 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
               placeholder="e.g. 30"
               value={durationMin}
               onChange={(e) => setDurationMin(Number(e.target.value))}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-neutral-300 mb-1">End time</label>
+            <input
+              type="datetime-local"
+              className="w-full bg-neutral-700 rounded-xl p-3"
+              value={endAtInput}
+              onChange={(e) => setEndAtInput(e.target.value)}
             />
           </div>
 
