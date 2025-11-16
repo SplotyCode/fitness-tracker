@@ -39,6 +39,7 @@ export interface Training {
   endedAt: Timestamp | null;
   type: TrainingType;
   kcalBurnt: number | null;
+  note?: string | null;
 }
 
 interface TrainingSetBase {

@@ -26,6 +26,7 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
 
   const [kcal, setKcal] = useState(data?.kcalBurnt ?? 250);
   const [durationMin, setDurationMin] = useState(initialDurationMin || 40);
+  const [note, setNote] = useState<string>(data?.note ?? "");
 
   const handleSave = async (): Promise<void> => {
     const endAt = data?.endedAt ?? Timestamp.now();
@@ -36,6 +37,7 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
       kcalBurnt: kcal,
       startedAt: Timestamp.fromMillis(startMs),
       endedAt: endAt,
+      note: note?.trim() ? note.trim() : null,
     } as Partial<Training>;
 
     if (isNew) {
@@ -83,6 +85,17 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
               placeholder="e.g. 300"
               value={kcal}
               onChange={(e) => setKcal(Number(e.target.value))}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-neutral-300 mb-1">Note</label>
+            <textarea
+              className="w-full bg-neutral-700 rounded-xl p-3"
+              placeholder="Optional notes (e.g., treadmill incline, pace, how you felt)"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
             />
           </div>
         </div>
