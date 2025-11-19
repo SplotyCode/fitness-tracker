@@ -15,6 +15,8 @@ export const EXERCISES: readonly Exercise[] = [
   {id: "triceps_press", name: "Triceps Press", equipment: "machine", restSec: 2.5 * 60, isUnilateral: false},
   {id: "lat_pulldown_machine", name: "Lat pulldown machine", equipment: "machine", restSec: 3 * 60, isUnilateral: false},
   {id: "bicep_machine", name: "Bicep machine", equipment: "machine", restSec: 2.5 * 60, isUnilateral: false},
+  {id: "preacher_curls_machine", name: "Preacher curls machine", equipment: "machine", restSec: 2.5 * 60, isUnilateral: false},
+  {id: "cable_hammer_curl", name: "Cable hammer curls", equipment: "machine", restSec: 2.5 * 60, isUnilateral: false},
   {id: "reverse_butterfly_machine", name: "Reverse Butterfly", equipment: "machine", restSec: 2.5 * 60, isUnilateral: false},
   {id: "close_grip_rows_machine", name: "Close grip rows", equipment: "machine", restSec: 3 * 60, isUnilateral: false},
   {id: "t_row_machine", name: "T-row machine", equipment: "machine", restSec: 3 * 60, isUnilateral: false},
