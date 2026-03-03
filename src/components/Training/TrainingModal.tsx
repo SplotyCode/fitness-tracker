@@ -1,7 +1,10 @@
 import {JSX, useEffect, useMemo, useState} from "react";
 import {
   EXERCISES,
+  EXERCISE_MOVEMENT_LABELS,
   ExerciseId,
+  Exercise,
+  MUSCLE_GROUP_LABELS,
   TrainingSet,
   Training,
   getExercise,
@@ -61,6 +64,18 @@ const TrainingModal = ({
     }
     return map;
   }, [sets]);
+
+  const exerciseGroups = useMemo(() => {
+    const groups = new Map<string, Exercise[]>();
+    for (const exercise of EXERCISES) {
+      const label = `${EXERCISE_MOVEMENT_LABELS[exercise.movement]} - ${MUSCLE_GROUP_LABELS[exercise.muscleGroup]}`;
+      groups.set(label, [...(groups.get(label) ?? []), exercise]);
+    }
+    return Array.from(groups.entries()).map(([label, exercises]) => ({
+      label,
+      exercises: [...exercises].sort((a, b) => a.name.localeCompare(b.name)),
+    }));
+  }, []);
 
   useEffect(() => {
     const existing = Object.keys(setsByExercise);
@@ -143,14 +158,18 @@ const TrainingModal = ({
             value={""}
           >
             <option value="" disabled={true}>Select exercise…</option>
-            {EXERCISES.map(e => {
-              const disabled = addedExerciseIds.includes(e.id);
-              return (
-                <option key={e.id} value={e.id} disabled={disabled}>
-                  {e.name}{disabled ? " (✓)" : ""}
-                </option>
-              );
-            })}
+            {exerciseGroups.map(group => (
+              <optgroup key={group.label} label={group.label}>
+                {group.exercises.map(e => {
+                  const disabled = addedExerciseIds.includes(e.id);
+                  return (
+                    <option key={e.id} value={e.id} disabled={disabled}>
+                      {e.name}{disabled ? " (✓)" : ""}
+                    </option>
+                  );
+                })}
+              </optgroup>
+            ))}
           </select>
         </div>
 
