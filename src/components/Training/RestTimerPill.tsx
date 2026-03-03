@@ -66,6 +66,7 @@ const RestTimerPill = ({seconds, at}: Props): JSX.Element => {
       }
 
       try {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (navigator.vibrate) navigator.vibrate([250, 125, 250]);
       } catch (e) {
         console.warn("Vibration failed: ", e);

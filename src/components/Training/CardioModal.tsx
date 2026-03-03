@@ -14,7 +14,7 @@ interface Props {
 const minutesFromMs = (ms: number): number => Math.max(0, Math.round(ms / 60000));
 
 const toLocalDatetimeInputValue = (date: Date): string => {
-  const pad = (n: number) => String(n).padStart(2, "0");
+  const pad = (n: number): string => String(n).padStart(2, "0");
   const yyyy = date.getFullYear();
   const mm = pad(date.getMonth() + 1);
   const dd = pad(date.getDate());
@@ -52,7 +52,7 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
       kcalBurnt: kcal,
       startedAt: Timestamp.fromMillis(startMs),
       endedAt: endAt,
-      note: note?.trim() ? note.trim() : null,
+      note: note.trim() ? note.trim() : null,
     } as Partial<Training>;
 
     if (isNew) {
