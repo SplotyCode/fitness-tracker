@@ -55,18 +55,26 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
       note: note.trim() ? note.trim() : null,
     } as Partial<Training>;
 
-    if (isNew) {
-      const id = newTrainingId(userId);
-      await saveTraining(userId, id, payload);
-    } else {
-      await saveTraining(userId, trainingId, payload);
-    }
     onClose();
+    try {
+      if (isNew) {
+        const id = newTrainingId(userId);
+        await saveTraining(userId, id, payload);
+      } else {
+        await saveTraining(userId, trainingId, payload);
+      }
+    } catch (error) {
+      console.error("Failed to save cardio training", error);
+    }
   };
 
   const handleDelete = async (trainingId: string): Promise<void> => {
-    await deleteSession({userId, trainingId});
     onClose();
+    try {
+      await deleteSession({userId, trainingId});
+    } catch (error) {
+      console.error("Failed to delete cardio training", error);
+    }
   };
 
   return (

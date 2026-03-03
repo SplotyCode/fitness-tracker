@@ -94,10 +94,21 @@ const TrainingModal = ({
     setLastSaved({exerciseId: payload.exerciseId, at: now});
   };
 
-  const handleEnd = async (): Promise<void> => { await end(); onClose(); };
-  const handleDelete = async (): Promise<void> => {
-    await remove();
+  const handleEnd = async (): Promise<void> => {
     onClose();
+    try {
+      await end();
+    } catch (error) {
+      console.error("Failed to end training", error);
+    }
+  };
+  const handleDelete = async (): Promise<void> => {
+    onClose();
+    try {
+      await remove();
+    } catch (error) {
+      console.error("Failed to delete training", error);
+    }
   };
 
   return (

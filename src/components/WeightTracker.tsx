@@ -101,10 +101,11 @@ const WeightTracker: React.FC = () => {
     } as Training;
     try {
       console.log("Creating training", id, data);
+      setEditingTraining(id);
       await saveTraining(user.uid, id, data);
       console.log("Training created", id, data);
-      setEditingTraining(id);
     } catch (e) {
+      setEditingTraining(current => current === id ? null : current);
       console.error("Failed to create training", e);
     }
   };
