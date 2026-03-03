@@ -155,9 +155,9 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
       const bt = b.performedAt.toMillis();
       return at - bt;
     });
-    const last = exSets[exSets.length - 1];
-    if (last.mode === "unilateral") {
-      const u = last;
+    const first = exSets[0];
+    if (first.mode === "unilateral") {
+      const u = first;
       return {
         mode: "unilateral",
         weightLeftKg: u.weightLeftKg,
@@ -166,7 +166,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
         repsRight: u.repsRight,
       };
     } else {
-      const b = last;
+      const b = first;
       return {mode: "bilateral", weightKg: b.weightKg, reps: b.reps};
     }
   }
