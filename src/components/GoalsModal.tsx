@@ -5,9 +5,11 @@ import {Level, NutritionColor} from "../domain/nutrition";
 import ProgressBar from "./ProgressBar";
 
 interface GoalsModalProps {
-    onClose: () => void;
-    goals: NutritionGoals[];
-    onChange: (goals: NutritionGoals[]) => void;
+  onClose: () => void;
+  goals: NutritionGoals[];
+  limitOverviewToCurrentGoal: boolean;
+  onChange: (goals: NutritionGoals[]) => void;
+  onLimitOverviewToCurrentGoalChange: (nextValue: boolean) => void;
 }
 
 type ViewMode = "list" | "edit";
@@ -20,7 +22,13 @@ const sortGoals = (a: NutritionGoals[], asc = true): NutritionGoals[] =>
       : new Date(y.validFrom).getTime() - new Date(x.validFrom).getTime()
   );
 
-const GoalsModal: React.FC<GoalsModalProps> = ({onClose, goals, onChange}) => {
+const GoalsModal: React.FC<GoalsModalProps> = ({
+  onClose,
+  goals,
+  limitOverviewToCurrentGoal,
+  onChange,
+  onLimitOverviewToCurrentGoalChange,
+}) => {
   const [mode, setMode] = useState<ViewMode>("list");
   const [editing, setEditing] = useState<NutritionGoals | null>(null);
 
@@ -109,6 +117,20 @@ const GoalsModal: React.FC<GoalsModalProps> = ({onClose, goals, onChange}) => {
           {mode === "list" ? (
             <>
               <div className="space-y-4">
+                <label className="flex items-center justify-between rounded-lg bg-zinc-800/40 p-4 text-sm">
+                  <div>
+                    <p className="text-base font-medium">Limit overview to current goal</p>
+                    <p className="text-zinc-400">
+                      Weight chart and week overview start from the current goal&apos;s start date.
+                    </p>
+                  </div>
+                  <input
+                    type="checkbox"
+                    checked={limitOverviewToCurrentGoal}
+                    onChange={(e) => onLimitOverviewToCurrentGoalChange(e.target.checked)}
+                    className="h-5 w-5 accent-indigo-500"
+                  />
+                </label>
                 {sortGoals(goals).map((g, i) => (
                   <div
                     key={i}

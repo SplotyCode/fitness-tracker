@@ -77,10 +77,23 @@ export const getDefaultNutritionGoal = (): NutritionGoals => {
     ],
   };
 };
+
+export const getCurrentNutritionGoal = (
+  goals: NutritionGoals[],
+  now: Date = new Date()
+): NutritionGoals => {
+  const nowMs = now.getTime();
+  const currentGoal = [...goals]
+    .sort((a, b) => new Date(b.validFrom).getTime() - new Date(a.validFrom).getTime())
+    .find((goal) => new Date(goal.validFrom).getTime() <= nowMs);
+
+  return currentGoal ?? goals.at(-1) ?? getDefaultNutritionGoal();
+};
+
 export const findNutritionGoalsForWeek = (week: WeekData, goals: NutritionGoals[]): NutritionGoals => {
   const weekStartDate = new Date(week.days[0].date);
 
-  for (const goal of goals.reverse()) {
+  for (const goal of [...goals].reverse()) {
     if (new Date(goal.validFrom) <= weekStartDate) {
       return goal;
     }

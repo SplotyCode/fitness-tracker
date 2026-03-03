@@ -5,6 +5,7 @@ import {FaSpinner} from "react-icons/fa";
 import {Timestamp} from "firebase/firestore";
 
 import {DayUpdateData, NutritionGoals, WeekData} from "../domain/nutrition";
+import {ProfileSettings, defaultProfileSettings} from "../domain/profile";
 import WeightChart from "./WeightChart";
 import Login from "./Login";
 import GoalsModal from "./GoalsModal";
@@ -16,13 +17,21 @@ import TrainingModal from "./Training/TrainingModal";
 import CardioModal from "./Training/CardioModal";
 import {Training} from "../domain/training";
 import {subscribeWeeklyData, saveDayData as ucSaveDayData} from "../usecases/weekly_data";
-import {subscribeNutritionGoalsOrInit, saveNutritionGoals as ucSaveNutritionGoals} from "../usecases/profile_subscriptions";
+import {
+  subscribeNutritionGoalsOrInit,
+  saveNutritionGoals as ucSaveNutritionGoals,
+  subscribeProfileSettingsOrInit,
+  saveProfileSettings as ucSaveProfileSettings,
+} from "../usecases/profile_subscriptions";
 import {subscribeTrainings, groupTrainingsByDay} from "../usecases/training/trainings_feed";
 import {newTrainingId, saveTraining} from "../repositories/trainings";
+import {getCurrentNutritionGoal} from "../usecases/nutrition";
+import {filterWeeksFromDate} from "../usecases/weekly_calculations";
 
 const WeightTracker: React.FC = () => {
   const [weeklyData, setWeeklyData] = useState<WeekData[]>([]);
   const [nutritionGoals, setNutritionGoals] = useState<NutritionGoals[]>([]);
+  const [profileSettings, setProfileSettings] = useState<ProfileSettings>(defaultProfileSettings);
   const [trainings, setTrainings] = useState<{ id: string; data: Training }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,6 +42,7 @@ const WeightTracker: React.FC = () => {
     if (!user) {
       setWeeklyData([]);
       setNutritionGoals([]);
+      setProfileSettings(defaultProfileSettings);
       setTrainings([]);
       return;
     }
@@ -49,6 +59,10 @@ const WeightTracker: React.FC = () => {
       setNutritionGoals(goals);
     }, {onPendingWrites: registerPendingWrites});
 
+    const unsubscribeProfileSettings = subscribeProfileSettingsOrInit(user.uid, (settings) => {
+      setProfileSettings(settings);
+    }, {onPendingWrites: registerPendingWrites});
+
     const unsubscribeTrainings = subscribeTrainings(user.uid, (arr) => {
       console.log("Trainings updated", arr);
       const sorted = [...arr].sort((a, b) => (b.data.startedAt.toMillis() - a.data.startedAt.toMillis()));
@@ -58,6 +72,7 @@ const WeightTracker: React.FC = () => {
     return () => {
       unsubscribeDays();
       unsubscribeGoals();
+      unsubscribeProfileSettings();
       unsubscribeTrainings();
     };
   }, [user, clearPendingWrites, registerPendingWrites]);
@@ -84,6 +99,16 @@ const WeightTracker: React.FC = () => {
   },
   [user]
   );
+
+  const handleSaveProfileSettings = useCallback(async (settings: ProfileSettings) => {
+    if (!user) return;
+    try {
+      await ucSaveProfileSettings(user.uid, settings);
+    } catch (err) {
+      console.error("Error saving profile settings:", err);
+    }
+  }, [user]);
+
   const [showGoalsModal, setShowGoalsModal] = useState(false);
   const [editingTraining, setEditingTraining] = useState<string | null>(null);
   const [editingCardio, setEditingCardio] = useState<{ id: string; data: Training } | true | null>(null);
@@ -113,6 +138,15 @@ const WeightTracker: React.FC = () => {
   const trainingsByDay = React.useMemo(() => {
     return groupTrainingsByDay(trainings);
   }, [trainings]);
+
+  const currentGoal = React.useMemo(() => getCurrentNutritionGoal(nutritionGoals), [nutritionGoals]);
+  const overviewWeeks = React.useMemo(() => {
+    if (!profileSettings.overview.limitToCurrentGoal) {
+      return weeklyData;
+    }
+
+    return filterWeeksFromDate(weeklyData, currentGoal.validFrom);
+  }, [currentGoal.validFrom, profileSettings.overview.limitToCurrentGoal, weeklyData]);
 
   const handleOpenTrainingById = (trainingId: string): void => {
     const found = trainings.find(t => t.id === trainingId);
@@ -151,10 +185,10 @@ const WeightTracker: React.FC = () => {
             onAddCardio={() => setEditingCardio(true)}
             onSignOut={handleSignOut}
           />
-          <WeightChart weeks={weeklyData} targetLossRates={[1, 2]}/>
+          <WeightChart weeks={overviewWeeks} targetLossRates={[1, 2]}/>
         </section>
         <WeekList
-          weeks={weeklyData}
+          weeks={overviewWeeks}
           onSaveDay={handleSaveDayData}
           goals={nutritionGoals}
           trainingsByDay={trainingsByDay}
@@ -165,7 +199,19 @@ const WeightTracker: React.FC = () => {
         <GoalsModal
           onClose={() => setShowGoalsModal(false)}
           goals={nutritionGoals}
+          limitOverviewToCurrentGoal={profileSettings.overview.limitToCurrentGoal}
           onChange={handleSaveNutritionGoals}
+          onLimitOverviewToCurrentGoalChange={(nextValue) => {
+            const nextSettings: ProfileSettings = {
+              ...profileSettings,
+              overview: {
+                ...profileSettings.overview,
+                limitToCurrentGoal: nextValue,
+              },
+            };
+            setProfileSettings(nextSettings);
+            void handleSaveProfileSettings(nextSettings);
+          }}
         />
       )}
       {editingTraining && (

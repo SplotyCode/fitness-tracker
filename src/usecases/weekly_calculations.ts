@@ -72,6 +72,11 @@ export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
   return generateWeeksFromRange(start, today, sortedDays);
 };
 
+export const filterWeeksFromDate = (weeks: WeekData[], startDateIso: string): WeekData[] => {
+  const startDate = new Date(startDateIso).getTime();
+  return weeks.filter((week) => week.days.some((day) => new Date(day.date).getTime() >= startDate));
+};
+
 const generateWeeksFromRange = (startDate: Date, endDate: Date, existingDays: DayData[]): WeekData[] => {
   const weeks: WeekData[] = [];
   const currentDay = new Date(startDate);
