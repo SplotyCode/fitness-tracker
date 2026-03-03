@@ -42,6 +42,22 @@ const SetsTable = ({
     let cancelled = false;
     const load = async (): Promise<void> => {
       try {
+        const lastSetToday = setsToday.at(-1)?.data;
+
+        if (lastSetToday) {
+          if (!unilateral && lastSetToday.mode === "bilateral") {
+            setNewBilat({weightKg: lastSetToday.weightKg, reps: lastSetToday.reps});
+          } else if (unilateral && lastSetToday.mode === "unilateral") {
+            setNewUni({
+              weightLeftKg: lastSetToday.weightLeftKg,
+              weightRightKg: lastSetToday.weightRightKg,
+              repsLeft: lastSetToday.repsLeft,
+              repsRight: lastSetToday.repsRight,
+            });
+          }
+          return;
+        }
+
         const last = await loadLastDefaults();
         if (cancelled || !last) return;
         if (!unilateral && last.mode === "bilateral") {
@@ -60,7 +76,7 @@ const SetsTable = ({
     };
     void load();
     return () => { cancelled = true; };
-  }, [loadLastDefaults, unilateral]);
+  }, [loadLastDefaults, setsToday, unilateral]);
 
   const saveNew = async (): Promise<void> => {
     const rpe = 2;
