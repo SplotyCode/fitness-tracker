@@ -1,5 +1,5 @@
 import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {FaArrowLeft, FaPlus, FaSave, FaTrashAlt} from "react-icons/fa";
+import {FaArrowLeft, FaCopy, FaPlus, FaSave, FaTrashAlt} from "react-icons/fa";
 import {NutritionGoals} from "../domain/nutrition";
 import {Level, NutritionColor} from "../domain/nutrition";
 import ProgressBar from "./ProgressBar";
@@ -86,6 +86,17 @@ const GoalsModal: React.FC<GoalsModalProps> = ({
       }
     };
 
+    const duplicateGoal = (goal: NutritionGoals): void => {
+      const duplicatedGoal: NutritionGoals = {
+        validFrom: new Date().toISOString().slice(0, 16),
+        kcalLevels: goal.kcalLevels.map((level) => ({...level})),
+        proteinLevels: goal.proteinLevels.map((level) => ({...level})),
+        fatLevels: goal.fatLevels.map((level) => ({...level})),
+      };
+
+      onChange(sortGoals([...goals, duplicatedGoal]));
+    };
+
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
         <div className="relative max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-zinc-900 p-6 shadow-xl">
@@ -155,6 +166,13 @@ const GoalsModal: React.FC<GoalsModalProps> = ({
                         className="rounded-md bg-indigo-600/70 px-3 py-1 text-white transition hover:bg-indigo-600"
                       >
                                             Edit
+                      </button>
+                      <button
+                        onClick={() => duplicateGoal(g)}
+                        className="rounded-md bg-sky-600/70 px-3 py-1 text-white transition hover:bg-sky-600"
+                        title="Duplicate with current date"
+                      >
+                        <FaCopy />
                       </button>
                       <button
                         onClick={() => deleteGoal(g)}
