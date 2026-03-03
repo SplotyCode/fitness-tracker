@@ -1,7 +1,10 @@
 import {JSX, useEffect, useMemo, useState} from "react";
 import {
   EXERCISES,
+  EXERCISE_MOVEMENT_LABELS,
   ExerciseId,
+  Exercise,
+  MUSCLE_GROUP_LABELS,
   TrainingSet,
   Training,
   getExercise,
@@ -52,6 +55,7 @@ const TrainingModal = ({
   const [openExerciseId, setOpenExerciseId] = useState<ExerciseId | null>(null);
   const [addedExerciseIds, setAddedExerciseIds] = useState<ExerciseId[]>([]);
   const [lastSaved, setLastSaved] = useState<{ exerciseId: ExerciseId; at: number } | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const setsByExercise = useMemo(() => {
     const map: Record<string, { id: string; data: TrainingSet }[]> = {};
@@ -60,6 +64,18 @@ const TrainingModal = ({
     }
     return map;
   }, [sets]);
+
+  const exerciseGroups = useMemo(() => {
+    const groups = new Map<string, Exercise[]>();
+    for (const exercise of EXERCISES) {
+      const label = `${EXERCISE_MOVEMENT_LABELS[exercise.movement]} - ${MUSCLE_GROUP_LABELS[exercise.muscleGroup]}`;
+      groups.set(label, [...(groups.get(label) ?? []), exercise]);
+    }
+    return Array.from(groups.entries()).map(([label, exercises]) => ({
+      label,
+      exercises: [...exercises].sort((a, b) => a.name.localeCompare(b.name)),
+    }));
+  }, []);
 
   useEffect(() => {
     const existing = Object.keys(setsByExercise);
@@ -79,7 +95,10 @@ const TrainingModal = ({
   };
 
   const handleEnd = async (): Promise<void> => { await end(); onClose(); };
-  const handleDelete = async (): Promise<void> => { await remove(); onClose(); };
+  const handleDelete = async (): Promise<void> => {
+    await remove();
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50">
@@ -87,18 +106,43 @@ const TrainingModal = ({
         <header className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Training</h3>
           <div className="flex items-center gap-3">
-            {lastSaved?.exerciseId && (
+            {lastSaved && (
               <RestTimerPill
-                key={`${lastSaved.exerciseId}-${lastSaved.at}`}
-                seconds={30}
+                seconds={getExercise(lastSaved.exerciseId).restSec}
+                at={lastSaved.at}
               />
             )}
-            <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
+            <button className="h-11 px-4 rounded-2xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
               <FaFlagCheckered />
             </button>
-            <button className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 flex items-center justify-center" onClick={handleDelete} aria-label="Delete session" title="Delete session">
-              <FaTrashAlt />
-            </button>
+            {confirmingDelete ? (
+              <>
+                <button
+                  className="h-11 px-4 rounded-2xl bg-neutral-700 hover:bg-neutral-600 text-sm"
+                  onClick={() => setConfirmingDelete(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="h-11 px-4 rounded-2xl bg-red-600 hover:bg-red-500 flex items-center justify-center gap-2"
+                  onClick={handleDelete}
+                  aria-label="Confirm delete session"
+                  title="Confirm delete session"
+                >
+                  <FaTrashAlt />
+                  <span className="text-sm">Delete?</span>
+                </button>
+              </>
+            ) : (
+              <button
+                className="h-11 px-4 rounded-2xl bg-red-600 hover:bg-red-500 flex items-center justify-center"
+                onClick={() => setConfirmingDelete(true)}
+                aria-label="Delete session"
+                title="Delete session"
+              >
+                <FaTrashAlt />
+              </button>
+            )}
           </div>
         </header>
 
@@ -114,14 +158,18 @@ const TrainingModal = ({
             value={""}
           >
             <option value="" disabled={true}>Select exercise…</option>
-            {EXERCISES.map(e => {
-              const disabled = addedExerciseIds.includes(e.id);
-              return (
-                <option key={e.id} value={e.id} disabled={disabled}>
-                  {e.name}{disabled ? " (✓)" : ""}
-                </option>
-              );
-            })}
+            {exerciseGroups.map(group => (
+              <optgroup key={group.label} label={group.label}>
+                {group.exercises.map(e => {
+                  const disabled = addedExerciseIds.includes(e.id);
+                  return (
+                    <option key={e.id} value={e.id} disabled={disabled}>
+                      {e.name}{disabled ? " (✓)" : ""}
+                    </option>
+                  );
+                })}
+              </optgroup>
+            ))}
           </select>
         </div>
 

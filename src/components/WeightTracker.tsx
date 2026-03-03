@@ -140,7 +140,7 @@ const WeightTracker: React.FC = () => {
 
   return (
     <main className="p-8 min-h-screen text-white bg-neutral-900">
-      <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl">
+      <div className="flex flex-col gap-8 mx-auto my-0 max-w-screen-xl overflow-auto">
         <section className="p-4 rounded-3xl border border-solid bg-white bg-opacity-10 border-white border-opacity-10">
           <Header
             user={user}

@@ -13,6 +13,16 @@ interface Props {
 
 const minutesFromMs = (ms: number): number => Math.max(0, Math.round(ms / 60000));
 
+const toLocalDatetimeInputValue = (date: Date): string => {
+  const pad = (n: number): string => String(n).padStart(2, "0");
+  const yyyy = date.getFullYear();
+  const mm = pad(date.getMonth() + 1);
+  const dd = pad(date.getDate());
+  const hh = pad(date.getHours());
+  const mi = pad(date.getMinutes());
+  return `${yyyy}-${mm}-${dd}T${hh}:${mi}`;
+};
+
 const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
   const {id: trainingId, data} = training ?? {id: null, data: null};
   const isNew = trainingId === null;
@@ -26,9 +36,15 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
 
   const [kcal, setKcal] = useState(data?.kcalBurnt ?? 250);
   const [durationMin, setDurationMin] = useState(initialDurationMin || 40);
+  const [note, setNote] = useState<string>(data?.note ?? "");
+  const [endAtInput, setEndAtInput] = useState<string>(
+    toLocalDatetimeInputValue(data?.endedAt ? data.endedAt.toDate() : new Date())
+  );
 
   const handleSave = async (): Promise<void> => {
-    const endAt = data?.endedAt ?? Timestamp.now();
+    const parsed = new Date(endAtInput);
+    const endDate = isNaN(parsed.getTime()) ? new Date() : parsed;
+    const endAt = Timestamp.fromDate(endDate);
     const startMs = endAt.toMillis() - durationMin * 60000;
     const payload: Partial<Training> = {
       day: data?.day ?? endAt.toDate().toISOString().split("T")[0],
@@ -36,6 +52,7 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
       kcalBurnt: kcal,
       startedAt: Timestamp.fromMillis(startMs),
       endedAt: endAt,
+      note: note.trim() ? note.trim() : null,
     } as Partial<Training>;
 
     if (isNew) {
@@ -76,6 +93,16 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
           </div>
 
           <div>
+            <label className="block text-sm text-neutral-300 mb-1">End time</label>
+            <input
+              type="datetime-local"
+              className="w-full bg-neutral-700 rounded-xl p-3"
+              value={endAtInput}
+              onChange={(e) => setEndAtInput(e.target.value)}
+            />
+          </div>
+
+          <div>
             <label className="block text-sm text-neutral-300 mb-1">Calories burnt (kcal)</label>
             <input
               type="number"
@@ -83,6 +110,17 @@ const CardioModal = ({userId, training, onClose}: Props): JSX.Element => {
               placeholder="e.g. 300"
               value={kcal}
               onChange={(e) => setKcal(Number(e.target.value))}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm text-neutral-300 mb-1">Note</label>
+            <textarea
+              className="w-full bg-neutral-700 rounded-xl p-3"
+              placeholder="Optional notes (e.g., treadmill incline, pace, how you felt)"
+              rows={3}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
             />
           </div>
         </div>

@@ -42,6 +42,22 @@ const SetsTable = ({
     let cancelled = false;
     const load = async (): Promise<void> => {
       try {
+        const lastSetToday = setsToday.at(-1)?.data;
+
+        if (lastSetToday) {
+          if (!unilateral && lastSetToday.mode === "bilateral") {
+            setNewBilat({weightKg: lastSetToday.weightKg, reps: lastSetToday.reps});
+          } else if (unilateral && lastSetToday.mode === "unilateral") {
+            setNewUni({
+              weightLeftKg: lastSetToday.weightLeftKg,
+              weightRightKg: lastSetToday.weightRightKg,
+              repsLeft: lastSetToday.repsLeft,
+              repsRight: lastSetToday.repsRight,
+            });
+          }
+          return;
+        }
+
         const last = await loadLastDefaults();
         if (cancelled || !last) return;
         if (!unilateral && last.mode === "bilateral") {
@@ -60,7 +76,7 @@ const SetsTable = ({
     };
     void load();
     return () => { cancelled = true; };
-  }, [loadLastDefaults, unilateral]);
+  }, [loadLastDefaults, setsToday, unilateral]);
 
   const saveNew = async (): Promise<void> => {
     const rpe = 2;
@@ -131,9 +147,9 @@ const SetsTable = ({
                 ) : (
                   <>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={(row).weightKg} onChange={n => setDraft({...row, weightKg: n})} /> : row.mode === "bilateral" ? row.weightKg : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.weightKg} onChange={n => setDraft({...row, weightKg: n})} /> : row.mode === "bilateral" ? row.weightKg : "—"}</td>
                     {/* eslint-disable-next-line @typescript-eslint/no-unsafe-assignment */}
-                    <td>{isEditing ? <QuickInputs value={(row).reps} onChange={n => setDraft({...row, reps: n})} /> : row.mode === "bilateral" ? row.reps : "—"}</td>
+                    <td>{isEditing ? <QuickInputs value={row.reps} onChange={n => setDraft({...row, reps: n})} /> : row.mode === "bilateral" ? row.reps : "—"}</td>
                   </>
                 )}
                 <td className="text-right">
@@ -160,7 +176,6 @@ const SetsTable = ({
               </tr>
             );
           })}
-          {/* Virtual new set row for adding at the bottom */}
           <tr className="border-t border-white/10 bg-white/5">
             <td className="py-2">{setsToday.length + 1}</td>
             {unilateral ? (

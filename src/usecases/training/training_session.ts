@@ -39,14 +39,13 @@ export async function buildProgressMatrix(
   const allTrainings: { id: string; data: Training }[] = [...preloadedTrainings].sort((a,b) =>
     b.data.startedAt.toMillis() - a.data.startedAt.toMillis()
   );
-  const picked = allTrainings.slice(0, trainingsLimit);
-
   const perTrainingSets: { trainingId: string; date: string; sets: TrainingSet[] }[] = [];
-  for (const t of picked) {
+  for (const training of allTrainings) {
+    if (perTrainingSets.length >= trainingsLimit) break;
     let sets: { id: string; data: TrainingSet }[] = [];
     await new Promise<void>((resolve, reject) => {
       const unsub = subscribeTrainingSets(
-        userId, t.id,
+        userId, training.id,
         (arr) => { sets = arr; unsub(); resolve(); },
         reject
       );
@@ -54,8 +53,9 @@ export async function buildProgressMatrix(
     const exerciseSets = sets
       .map(s => s.data)
       .filter(s => s.exerciseId === exerciseId);
-    const dateIso = t.data.startedAt.toDate().toISOString()
-    perTrainingSets.push({trainingId: t.id, date: dateIso, sets: exerciseSets});
+    if (exerciseSets.length === 0) continue;
+    const dateIso = training.data.startedAt.toDate().toISOString()
+    perTrainingSets.push({trainingId: training.id, date: dateIso, sets: exerciseSets});
   }
 
   const isUnilateral = getExercise(exerciseId).isUnilateral;
@@ -155,9 +155,9 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
       const bt = b.performedAt.toMillis();
       return at - bt;
     });
-    const last = exSets[exSets.length - 1];
-    if (last.mode === "unilateral") {
-      const u = last;
+    const first = exSets[0];
+    if (first.mode === "unilateral") {
+      const u = first;
       return {
         mode: "unilateral",
         weightLeftKg: u.weightLeftKg,
@@ -166,7 +166,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
         repsRight: u.repsRight,
       };
     } else {
-      const b = last;
+      const b = first;
       return {mode: "bilateral", weightKg: b.weightKg, reps: b.reps};
     }
   }

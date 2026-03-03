@@ -48,17 +48,17 @@ export const calculateTrainingStatsForWeek = (
   }, {strength: 0, cardio: 0, cardioKcal: 0, cardioMin: 0});
 };
 
-export const getMonday = (d: Date): Date => {
+const getMonday = (d: Date): Date => {
   const date = new Date(d);
-  const diff = (date.getDay() + 6) % 7; // 0 (Sun) → 6, 1 (Mon) → 0, ..., 6 (Sat) → 5
-  date.setDate(date.getDate() - diff);
-  date.setHours(0);
+  const day = (date.getUTCDay() + 6) % 7; // 0 (So)→6, 1 (Mo)→0, ...
+  date.setUTCDate(date.getUTCDate() - day);
+  date.setUTCHours(0, 0, 0, 0);
   return date;
 };
 
-export const toUtcMidnight = (d: Date): Date => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+const toUtcMidnight = (d: Date): Date => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 
-export const isSameDateTime = (a: Date, b: Date): boolean => a.getTime() === b.getTime();
+const isSameDateTime = (a: Date, b: Date): boolean => a.getTime() === b.getTime();
 
 export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
   const today = toUtcMidnight(new Date());
@@ -67,7 +67,7 @@ export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
   if (dayDocs.length !== 0) {
     start = toUtcMidnight(new Date(sortedDays[0].date));
   } else {
-    start = toUtcMidnight(getMonday(today));
+    start = getMonday(today);
   }
   return generateWeeksFromRange(start, today, sortedDays);
 };
@@ -103,7 +103,8 @@ const generateWeeksFromRange = (startDate: Date, endDate: Date, existingDays: Da
         weight: null,
       });
     }
-    currentDay.setDate(currentDay.getDate() + 1);
+    currentDay.setUTCDate(currentDay.getUTCDate() + 1);
+    currentDay.setUTCHours(0, 0, 0, 0);
   }
   weeks.forEach(week => week.days.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
   return weeks;

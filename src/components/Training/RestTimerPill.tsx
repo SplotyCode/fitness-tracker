@@ -1,23 +1,81 @@
 import {JSX, useEffect, useState} from "react";
 import {FiClock} from "react-icons/fi";
 
-const RestTimerPill = ({seconds}: { seconds: number }): JSX.Element => {
-  const [target, setTarget] = useState(seconds);
-  const [passed, setPassed] = useState(0);
+interface Props {
+  seconds: number;
+  at: number;
+}
+
+const RestTimerPill = ({seconds, at}: Props): JSX.Element => {
+  const [extraSec, setExtraSec] = useState(0);
+  const [now, setNow] = useState<number>(Date.now());
+  const [notified, setNotified] = useState(false);
 
   useEffect(() => {
-    const id = setInterval(() => setPassed((s) => s + 1), 1000);
+    setExtraSec(0);
+    setNotified(false);
+  }, [at]);
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
   }, []);
 
-  const remaining = Math.max(0, target - passed);
-  const handleAdd30 = (): void => setTarget((t) => t + 30);
+  const totalPlannedSec = seconds + extraSec;
+  const targetMs = at + totalPlannedSec * 1000;
+  const remainingSec = Math.max(0, Math.ceil((targetMs - now) / 1000));
+  const passedSec = Math.max(0, Math.floor((now - at) / 1000));
 
-  const shown = remaining > 0 ? remaining : passed;
+  const handleAdd30 = (): void => {
+    setExtraSec((s) => s + 30);
+    if (typeof Notification !== "undefined" && Notification.permission === "default") {
+      try {
+        void Notification.requestPermission();
+      } catch (e) {
+        console.warn("Notification request failed: ", e);
+      }
+    }
+  };
+
+  const shown = remainingSec > 0 ? remainingSec : passedSec;
   const mm = Math.floor(shown / 60).toString();
   const ss = (shown % 60).toString().padStart(2, "0");
 
-  const reached = remaining === 0;
+  const reached = remainingSec === 0;
+
+  useEffect(() => {
+    if (!reached || notified) return;
+
+    const sendNotification = async (): Promise<void> => {
+      console.log("Sending notification");
+      const title = "Rest complete";
+      const body = "Time to start your next set";
+
+      if (typeof Notification !== "undefined") {
+        try {
+          let permission = Notification.permission;
+          if (permission === "default") {
+            permission = await Notification.requestPermission();
+          }
+          if (permission === "granted") {
+            new Notification(title, {body});
+          }
+        } catch (e) {
+          console.warn("Notification failed: ", e);
+        }
+      }
+
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        if (navigator.vibrate) navigator.vibrate([250, 125, 250]);
+      } catch (e) {
+        console.warn("Vibration failed: ", e);
+      }
+    };
+
+    void sendNotification();
+    setNotified(true);
+  }, [reached, notified]);
 
   return (
     <button
