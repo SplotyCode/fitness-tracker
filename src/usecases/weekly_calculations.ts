@@ -1,6 +1,11 @@
 import {WeekData, DayData} from "../domain/nutrition";
 import {Training} from "../domain/training";
 
+const toUtcDayStart = (value: string | Date): Date => {
+  const date = new Date(value);
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+};
+
 export const calculateAverageForWeek = (
   week: WeekData,
   key: keyof Pick<DayData, "kcal" | "weight" | "protein" | "fat">
@@ -56,16 +61,14 @@ const getMonday = (d: Date): Date => {
   return date;
 };
 
-const toUtcMidnight = (d: Date): Date => new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-
 const isSameDateTime = (a: Date, b: Date): boolean => a.getTime() === b.getTime();
 
 export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
-  const today = toUtcMidnight(new Date());
+  const today = toUtcDayStart(new Date());
   const sortedDays = dayDocs.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   let start: Date;
   if (dayDocs.length !== 0) {
-    start = toUtcMidnight(new Date(sortedDays[0].date));
+    start = toUtcDayStart(sortedDays[0].date);
   } else {
     start = getMonday(today);
   }
@@ -73,8 +76,8 @@ export const fillAndGroupDays = (dayDocs: DayData[]): WeekData[] => {
 };
 
 export const filterWeeksFromDate = (weeks: WeekData[], startDateIso: string): WeekData[] => {
-  const startDate = new Date(startDateIso).getTime();
-  return weeks.filter((week) => week.days.some((day) => new Date(day.date).getTime() >= startDate));
+  const startDate = toUtcDayStart(startDateIso).getTime();
+  return weeks.filter((week) => week.days.some((day) => toUtcDayStart(day.date).getTime() >= startDate));
 };
 
 const generateWeeksFromRange = (startDate: Date, endDate: Date, existingDays: DayData[]): WeekData[] => {
