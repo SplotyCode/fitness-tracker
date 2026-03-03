@@ -52,6 +52,7 @@ const TrainingModal = ({
   const [openExerciseId, setOpenExerciseId] = useState<ExerciseId | null>(null);
   const [addedExerciseIds, setAddedExerciseIds] = useState<ExerciseId[]>([]);
   const [lastSaved, setLastSaved] = useState<{ exerciseId: ExerciseId; at: number } | null>(null);
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const setsByExercise = useMemo(() => {
     const map: Record<string, { id: string; data: TrainingSet }[]> = {};
@@ -79,7 +80,10 @@ const TrainingModal = ({
   };
 
   const handleEnd = async (): Promise<void> => { await end(); onClose(); };
-  const handleDelete = async (): Promise<void> => { await remove(); onClose(); };
+  const handleDelete = async (): Promise<void> => {
+    await remove();
+    onClose();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50">
@@ -93,12 +97,37 @@ const TrainingModal = ({
                 at={lastSaved.at}
               />
             )}
-            <button className="px-3 py-2 rounded-xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
+            <button className="h-11 px-4 rounded-2xl bg-neutral-700 hover:bg-neutral-600 flex items-center justify-center" onClick={handleEnd} aria-label="End session" title="End session">
               <FaFlagCheckered />
             </button>
-            <button className="px-3 py-2 rounded-xl bg-red-600 hover:bg-red-500 flex items-center justify-center" onClick={handleDelete} aria-label="Delete session" title="Delete session">
-              <FaTrashAlt />
-            </button>
+            {confirmingDelete ? (
+              <>
+                <button
+                  className="h-11 px-4 rounded-2xl bg-neutral-700 hover:bg-neutral-600 text-sm"
+                  onClick={() => setConfirmingDelete(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="h-11 px-4 rounded-2xl bg-red-600 hover:bg-red-500 flex items-center justify-center gap-2"
+                  onClick={handleDelete}
+                  aria-label="Confirm delete session"
+                  title="Confirm delete session"
+                >
+                  <FaTrashAlt />
+                  <span className="text-sm">Delete?</span>
+                </button>
+              </>
+            ) : (
+              <button
+                className="h-11 px-4 rounded-2xl bg-red-600 hover:bg-red-500 flex items-center justify-center"
+                onClick={() => setConfirmingDelete(true)}
+                aria-label="Delete session"
+                title="Delete session"
+              >
+                <FaTrashAlt />
+              </button>
+            )}
           </div>
         </header>
 
