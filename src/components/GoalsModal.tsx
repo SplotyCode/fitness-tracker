@@ -1,5 +1,5 @@
 import React, {Dispatch, SetStateAction, useEffect, useState} from "react";
-import {FaArrowLeft, FaCopy, FaPlus, FaSave, FaTrashAlt} from "react-icons/fa";
+import {FaArrowLeft, FaCopy, FaEdit, FaPlus, FaSave, FaTrashAlt} from "react-icons/fa";
 import {NutritionGoals} from "../domain/nutrition";
 import {Level, NutritionColor} from "../domain/nutrition";
 import ProgressBar from "./ProgressBar";
@@ -164,8 +164,9 @@ const GoalsModal: React.FC<GoalsModalProps> = ({
                           setMode("edit");
                         }}
                         className="rounded-md bg-indigo-600/70 px-3 py-1 text-white transition hover:bg-indigo-600"
+                        title="Edit"
                       >
-                                            Edit
+                        <FaEdit />
                       </button>
                       <button
                         onClick={() => duplicateGoal(g)}
