@@ -12,6 +12,15 @@ const ProgressPanel = ({loadProgress}: { loadProgress: () => Promise<ProgressMat
 
   if (!mx) return <div className="text-sm text-zinc-400">Loading progress…</div>;
 
+  const sessionDates = mx.sessions.map((session) => new Date(session.date));
+  const sessionYears = [...new Set(sessionDates.map((date) => date.getFullYear()))];
+  const currentYear = new Date().getFullYear();
+  const shouldShowYear = sessionYears.length === 1 && sessionYears[0] !== currentYear;
+  const formatHeaderDate = (date: Date): string => {
+    const dayMonth = `${date.getDate()}.${date.getMonth() + 1}`;
+    return shouldShowYear ? `${dayMonth}.${date.getFullYear()}` : dayMonth;
+  };
+
   return (
     <div className="mt-2 p-3 rounded-xl bg-white/5">
       <div className="overflow-x-auto">
@@ -19,9 +28,9 @@ const ProgressPanel = ({loadProgress}: { loadProgress: () => Promise<ProgressMat
           <thead className="text-zinc-400">
             <tr>
               <th className="text-left p-2">Set</th>
-              {mx.sessions.map((s, i) => (
+              {sessionDates.map((date, i) => (
                 <th key={i} className="text-left p-2">
-                  {new Date(s.date).toLocaleDateString()}
+                  {formatHeaderDate(date)}
                 </th>
               ))}
             </tr>
