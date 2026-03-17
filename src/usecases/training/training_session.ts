@@ -66,10 +66,10 @@ export async function buildProgressMatrix(
   const rows: ProgressMatrix["rows"] = [];
   for (let i = 0; i < maxSets; i++) {
     if (isUnilateral) {
-      rows.push({label: `Set ${i + 1} L`, setIndex: i, side: "L"});
-      rows.push({label: `Set ${i + 1} R`, setIndex: i, side: "R"});
+      rows.push({label: `${i + 1} L`, setIndex: i, side: "L"});
+      rows.push({label: `${i + 1} R`, setIndex: i, side: "R"});
     } else {
-      rows.push({label: `Set ${i + 1}`, setIndex: i});
+      rows.push({label: `${i + 1}`, setIndex: i});
     }
   }
 
