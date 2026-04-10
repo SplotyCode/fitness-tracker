@@ -34,6 +34,7 @@ export const EXERCISES: readonly Exercise[] = [
   {id: "lat_pulldown_machine", name: "Lat pulldown machine", equipment: "machine", movement: "pull", muscleGroup: "back", restSec: 3 * 60, isUnilateral: false},
   {id: "bicep_machine", name: "Bicep machine", equipment: "machine", movement: "pull", muscleGroup: "biceps", restSec: 2.5 * 60, isUnilateral: false},
   {id: "preacher_curls_machine", name: "Preacher curls machine", equipment: "machine", movement: "pull", muscleGroup: "biceps", restSec: 2.5 * 60, isUnilateral: false},
+  {id: "hammer_curls", name: "Hammer curls", equipment: "dumbbell", movement: "pull", muscleGroup: "biceps", restSec: 2.5 * 60, isUnilateral: false},
   {id: "cable_hammer_curl", name: "Cable hammer curls", equipment: "machine", movement: "pull", muscleGroup: "biceps", restSec: 2.5 * 60, isUnilateral: false},
   {id: "reverse_butterfly_machine", name: "Reverse Butterfly", equipment: "machine", movement: "pull", muscleGroup: "shoulders", restSec: 2.5 * 60, isUnilateral: false},
   {id: "close_grip_rows_machine", name: "Close grip rows", equipment: "machine", movement: "pull", muscleGroup: "back", restSec: 3 * 60, isUnilateral: false},
