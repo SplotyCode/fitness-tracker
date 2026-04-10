@@ -1,4 +1,4 @@
-import {JSX, useState} from "react";
+import {JSX, MouseEvent, useState} from "react";
 import {FaChevronDown, FaChevronUp, FaArrowDown, FaArrowUp} from "react-icons/fa";
 
 import {DayUpdateData, NutritionGoals, WeekData} from "../../domain/nutrition";
@@ -26,6 +26,7 @@ const WeekCard = ({
   onOpenTrainingById,
 }: WeekCardProps): JSX.Element => {
   const [showDays, setShowDays] = useState(initialIsOpen);
+  const [showAverageWeight, setShowAverageWeight] = useState(false);
   const weeklyKcalAvg = calculateAverageForWeek(week, "kcal");
   const weeklyProteinAvg = calculateAverageForWeek(week, "protein");
   const weeklyFatAvg = calculateAverageForWeek(week, "fat");
@@ -39,6 +40,11 @@ const WeekCard = ({
 
   const handleToggle = (): void => {
     setShowDays(!showDays);
+  };
+
+  const handleWeightDiffToggle = (event: MouseEvent<HTMLButtonElement>): void => {
+    event.stopPropagation();
+    setShowAverageWeight((current) => !current);
   };
 
   return (
@@ -68,32 +74,38 @@ const WeekCard = ({
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            {weightDiff !== null && (
-              <>
-                {weightDiff < 0 && <FaArrowDown className="text-green-500" />}
-                {weightDiff > 0 && <FaArrowUp className="text-red-500" />}
-              </>
-            )}
-            <div
-              className="text-3xl font-semibold"
-              style={{
-                color:
-                  weightDiff !== null
-                    ? weightDiff < 0
-                      ? "text-green-500"
-                      : "text-red-500"
-                    : "inherit",
-              }}
+          <div className="flex flex-col items-end gap-1">
+            <button
+              type="button"
+              className="flex items-center gap-2 text-right"
+              onClick={handleWeightDiffToggle}
             >
-              {weightDiff !== null ? (
+              {weightDiff !== null && (
                 <>
-                  {Math.abs(weightDiff)} kg
+                  {weightDiff < 0 && <FaArrowDown className="text-green-500" />}
+                  {weightDiff > 0 && <FaArrowUp className="text-red-500" />}
                 </>
-              ) : (
-                "— kg"
               )}
-            </div>
+              <div
+                className="text-3xl font-semibold"
+                style={{
+                  color:
+                    !showAverageWeight && weightDiff !== null
+                      ? weightDiff < 0
+                        ? "text-green-500"
+                        : "text-red-500"
+                      : "inherit",
+                }}
+              >
+                {showAverageWeight ? (
+                  currentWeekAvgWeight !== null ? `${currentWeekAvgWeight.toFixed(1)} kg` : "— kg"
+                ) : weightDiff !== null ? (
+                  `${Math.abs(weightDiff)} kg`
+                ) : (
+                  "— kg"
+                )}
+              </div>
+            </button>
           </div>
           <div className="flex items-center">
             {showDays ? (

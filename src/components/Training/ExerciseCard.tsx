@@ -14,7 +14,7 @@ interface Props {
     onAddSet: <T extends TrainingSet>(payload: Omit<T, "pauseSec" | "trainingId">) => Promise<void>;
     onUpdateSet: (setId: string, data: Partial<TrainingSet>) => Promise<void>;
     onDeleteSet: (setId: string) => Promise<void>;
-    loadProgress: () => Promise<ProgressMatrix>;
+    loadProgress: (trainingsLimit?: number) => Promise<ProgressMatrix>;
     loadLastDefaults: () => Promise<
         | { mode: "bilateral"; weightKg: number; reps: number }
         | { mode: "unilateral"; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number }
