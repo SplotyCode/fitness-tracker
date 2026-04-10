@@ -31,7 +31,7 @@ export async function deleteSession(
 }
 
 export async function buildProgressMatrix(
-  params: { userId: string; exerciseId: ExerciseId; trainingsLimit: number },
+  params: { userId: string; exerciseId: ExerciseId; trainingsLimit?: number },
   preloadedTrainings: { id: string; data: Training }[]
 ): Promise<ProgressMatrix> {
   const {userId, exerciseId, trainingsLimit} = params;
@@ -41,7 +41,7 @@ export async function buildProgressMatrix(
   );
   const perTrainingSets: { trainingId: string; date: string; sets: TrainingSet[] }[] = [];
   for (const training of allTrainings) {
-    if (perTrainingSets.length >= trainingsLimit) break;
+    if (trainingsLimit !== undefined && perTrainingSets.length >= trainingsLimit) break;
     let sets: { id: string; data: TrainingSet }[] = [];
     await new Promise<void>((resolve, reject) => {
       const unsub = subscribeTrainingSets(

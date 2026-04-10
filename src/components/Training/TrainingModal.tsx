@@ -44,7 +44,7 @@ const TrainingModal = ({
     deleteSet: (setId: string) => repoDeleteSet(userId, trainingId, setId),
     end: () => endSession({userId, trainingId}),
     remove: () => deleteSession({userId, trainingId}),
-    progressFor: (exerciseId: ExerciseId, trainingsLimit: number) =>
+    progressFor: (exerciseId: ExerciseId, trainingsLimit?: number) =>
       buildProgressMatrix({userId, exerciseId, trainingsLimit}, trainings),
     lastDefaultsFromPrev: (exerciseId: ExerciseId) =>
       getLastExerciseDefaultsFromPreviousTraining({userId, currentTrainingId: trainingId, exerciseId}, trainings),
@@ -197,7 +197,7 @@ const TrainingModal = ({
                 onAddSet={handleAddSet}
                 onUpdateSet={(setId, data) => updateSet(setId, data)}
                 onDeleteSet={(setId) => deleteSet(setId)}
-                loadProgress={() => progressFor(ex.id, 6)}
+                loadProgress={(trainingsLimit) => progressFor(ex.id, trainingsLimit)}
                 loadLastDefaults={() => lastDefaultsFromPrev(ex.id)}
               />
             );

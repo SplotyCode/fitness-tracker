@@ -11,3 +11,4 @@ export const defaultProfileSettings: ProfileSettings = {
     limitToCurrentGoal: false,
   },
 };
+3
