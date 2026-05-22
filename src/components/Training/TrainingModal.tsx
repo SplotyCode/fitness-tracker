@@ -4,6 +4,8 @@ import {
   EXERCISE_MOVEMENT_LABELS,
   ExerciseId,
   Exercise,
+  ExerciseMovement,
+  MuscleGroup,
   MUSCLE_GROUP_LABELS,
   TrainingSet,
   Training,
@@ -66,16 +68,34 @@ const TrainingModal = ({
   }, [sets]);
 
   const exerciseGroups = useMemo(() => {
-    const groups = new Map<string, Exercise[]>();
+    const currentMovements = new Set(
+      addedExerciseIds.map((exerciseId) => getExercise(exerciseId).movement)
+    );
+    const groups = new Map<string, { movement: ExerciseMovement; muscleGroup: MuscleGroup; exercises: Exercise[] }>();
     for (const exercise of EXERCISES) {
       const label = `${EXERCISE_MOVEMENT_LABELS[exercise.movement]} - ${MUSCLE_GROUP_LABELS[exercise.muscleGroup]}`;
-      groups.set(label, [...(groups.get(label) ?? []), exercise]);
+      const existing = groups.get(label);
+      if (existing) {
+        existing.exercises.push(exercise);
+      } else {
+        groups.set(label, {movement: exercise.movement, muscleGroup: exercise.muscleGroup, exercises: [exercise]});
+      }
     }
-    return Array.from(groups.entries()).map(([label, exercises]) => ({
-      label,
-      exercises: [...exercises].sort((a, b) => a.name.localeCompare(b.name)),
-    }));
-  }, []);
+    return Array.from(groups.entries())
+      .sort(([, a], [, b]) => {
+        const movementPriorityDiff = Number(currentMovements.has(b.movement)) - Number(currentMovements.has(a.movement));
+        if (movementPriorityDiff !== 0) return movementPriorityDiff;
+
+        const movementDiff = EXERCISE_MOVEMENT_LABELS[a.movement].localeCompare(EXERCISE_MOVEMENT_LABELS[b.movement]);
+        if (movementDiff !== 0) return movementDiff;
+
+        return MUSCLE_GROUP_LABELS[a.muscleGroup].localeCompare(MUSCLE_GROUP_LABELS[b.muscleGroup]);
+      })
+      .map(([label, group]) => ({
+        label,
+        exercises: [...group.exercises].sort((a, b) => a.name.localeCompare(b.name)),
+      }));
+  }, [addedExerciseIds]);
 
   useEffect(() => {
     const existing = Object.keys(setsByExercise);
