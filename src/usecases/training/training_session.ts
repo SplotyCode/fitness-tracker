@@ -1,7 +1,5 @@
 import {Timestamp} from "firebase/firestore";
-import {
-  ExerciseId, Training, TrainingSet, getExercise,
-} from "../../domain/training";
+import {ExerciseId, getExercise, Training, TrainingSet,} from "../../domain/training";
 import {deleteTraining, saveTraining, subscribeTrainingSets} from "../../repositories/trainings";
 
 export interface ProgressCell {
@@ -115,6 +113,33 @@ export type LastDefaults =
   | { mode: "bilateral"; weightKg: number; reps: number }
   | { mode: "unilateral"; weightLeftKg: number; weightRightKg: number; repsLeft: number; repsRight: number };
 
+function compareBestDefaultCandidate(a: TrainingSet, b: TrainingSet): number {
+  if (a.mode === "bilateral" && b.mode === "bilateral") {
+    const weightDiff = b.weightKg - a.weightKg;
+    if (weightDiff !== 0) return weightDiff;
+
+    return b.reps - a.reps;
+  }
+
+  if (a.mode === "unilateral" && b.mode === "unilateral") {
+    const aWeights = [Math.max(a.weightLeftKg, a.weightRightKg), Math.min(a.weightLeftKg, a.weightRightKg)];
+    const bWeights = [Math.max(b.weightLeftKg, b.weightRightKg), Math.min(b.weightLeftKg, b.weightRightKg)];
+    for (let i = 0; i < aWeights.length; i++) {
+      const weightDiff = bWeights[i] - aWeights[i];
+      if (weightDiff !== 0) return weightDiff;
+    }
+
+    const aReps = [Math.max(a.repsLeft, a.repsRight), Math.min(a.repsLeft, a.repsRight)];
+    const bReps = [Math.max(b.repsLeft, b.repsRight), Math.min(b.repsLeft, b.repsRight)];
+    for (let i = 0; i < aReps.length; i++) {
+      const repsDiff = bReps[i] - aReps[i];
+      if (repsDiff !== 0) return repsDiff;
+    }
+  }
+
+  return 0;
+}
+
 export async function getLastExerciseDefaultsFromPreviousTraining(
   params: { userId: string; currentTrainingId: string; exerciseId: ExerciseId },
   preloadedTrainings: { id: string; data: Training }[]
@@ -147,17 +172,10 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
       .filter((s) => s.exerciseId === exerciseId);
     if (exSets.length === 0) continue;
 
-    exSets.sort((a: TrainingSet, b: TrainingSet) => {
-      const ai = a.setIndex;
-      const bi = b.setIndex;
-      if (ai !== bi) return ai - bi;
-      const at = a.performedAt.toMillis();
-      const bt = b.performedAt.toMillis();
-      return at - bt;
-    });
-    const first = exSets[0];
-    if (first.mode === "unilateral") {
-      const u = first;
+    exSets.sort(compareBestDefaultCandidate);
+    const bestSet = exSets[0];
+    if (bestSet.mode === "unilateral") {
+      const u = bestSet;
       return {
         mode: "unilateral",
         weightLeftKg: u.weightLeftKg,
@@ -166,7 +184,7 @@ export async function getLastExerciseDefaultsFromPreviousTraining(
         repsRight: u.repsRight,
       };
     } else {
-      const b = first;
+      const b = bestSet;
       return {mode: "bilateral", weightKg: b.weightKg, reps: b.reps};
     }
   }
