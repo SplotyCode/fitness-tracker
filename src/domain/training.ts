@@ -2,7 +2,7 @@ import {Timestamp} from "firebase/firestore";
 
 export type Equipment = "machine" | "dumbbell" | "loaded" | "cable";
 export type ExerciseMovement = "push" | "pull" | "legs";
-export type MuscleGroup = "chest" | "triceps" | "back" | "biceps" | "shoulders" | "quads" | "hamstrings";
+export type MuscleGroup = "chest" | "triceps" | "back" | "biceps" | "shoulders" | "quads" | "hamstrings" | "abs";
 export const EXERCISE_MOVEMENT_LABELS: Record<ExerciseMovement, string> = {
   push: "Push",
   pull: "Pull",
@@ -16,6 +16,7 @@ export const MUSCLE_GROUP_LABELS: Record<MuscleGroup, string> = {
   shoulders: "Shoulders",
   quads: "Quads",
   hamstrings: "Hamstrings",
+  abs: "Abs",
 };
 
 export interface Exercise {
@@ -45,6 +46,8 @@ export const EXERCISES: readonly Exercise[] = [
   {id: "leg_extension_machine", name: "Leg extension machine", equipment: "machine", movement: "legs", muscleGroup: "quads", restSec: 3 * 60, isUnilateral: false},
   {id: "leg_curl_machine", name: "Leg curl machine", equipment: "machine", movement: "legs", muscleGroup: "hamstrings", restSec: 3 * 60, isUnilateral: false},
   {id: "lateral_raises_machine", name: "Lateral raises machine", equipment: "machine", movement: "push", muscleGroup: "shoulders", restSec: 2.5 * 60, isUnilateral: false},
+  {id: "cable_lateral_raise", name: "Cable lateral raise", equipment: "cable", movement: "push", muscleGroup: "shoulders", restSec: 2.5 * 60, isUnilateral: true},
+  {id: "ab_crunch_machine", name: "Ab crunch machine", equipment: "machine", movement: "push", muscleGroup: "abs", restSec: 2 * 60, isUnilateral: false},
 ] as const;
 
 export type ExerciseId = (typeof EXERCISES)[number]["id"];
